@@ -11,16 +11,33 @@
     font-size:20px;
 }
 
+.text {
+    width:30%;
+    margin:auto;
+}
+
+.text:hover {
+    text-shadow: 2px 3px 11px #000000;
+}
+
+.content h2 {
+    color:white;
+}
+
 .content {
     background-color: #006BFF;
-    height:100vh;
+    height:90vh;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
+    flex-direction: column;
 }
 
 .search {
+    margin-top:10px;
+    font-size:20px;
+    padding-left:20px;
     width:50%;
     height:7%;
     background-color: transparent;
@@ -29,8 +46,22 @@
     color:white;
 }
 
+.tag {
+    display: flex;
+    gap:30px;
+    margin-top: 15px;
+    color:white;
+    font-size: 20px;
+    padding:10px
+}
+
+.tag p {
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
 .search::placeholder {
-    padding:20px;
     align-items: center;
     justify-content: center;
     align-content: center;
