@@ -1,25 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-}
-
-.header {
-    text-align:center;
-    background-color: #024CAA;
-    color:white;    
-    padding:20px;
-    font-size:20px;
-}
-
-.text {
-    width:30%;
-    margin:auto;
-}
-
-.text:hover {
-    text-shadow: 2px 3px 11px #000000;
-}
-
 .content h2 {
     color:white;
 }
@@ -55,10 +33,12 @@
     padding:10px
 }
 
-.tag p {
+.tag a {
     padding: 10px;
     border: 2px solid white;
     border-radius: 10px;
+    text-decoration: none;
+    color:white
 }
 
 .search::placeholder {
@@ -68,11 +48,4 @@
     color: #ffffff;
     opacity: 1;
     font-size: 20px;
-}
-
-.footer {
-    padding: 10px;
-    background-color: #024CAA;
-    text-align: center;
-    color:white;
 }
