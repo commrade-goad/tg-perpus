@@ -3,9 +3,6 @@
     padding: 0;
     box-sizing: inherit;
 }
-<<<<<<< HEAD
-
-=======
 img {
     width: 150px;
     height: 215px;
@@ -35,7 +32,6 @@ img {
     padding-left: 20px;
     padding-right: 20px;
 }
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .content1 {
     text-align: center;
     padding: 20px;
@@ -50,14 +46,7 @@ img {
     border: 3px solid white;
     border-radius: 12px;
     color:#EBEAEF;
-<<<<<<< HEAD
-    margin-right: 10px;
-    outline:none;
 }
-
-=======
-}
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .search1::placeholder {
     align-items: center;
     justify-content: center;
@@ -66,15 +55,6 @@ img {
     opacity: 1;
     font-size: 20px;
 }
-<<<<<<< HEAD
-
-.icon {
-    font-size: 20px;
-    color: #EBEAEF;
-}
-
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .jenis {
     font-size: 20px;
     color: #EBEAEF;
@@ -83,54 +63,8 @@ img {
     padding-top: 20px;
     display: inline;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .jenis p {
     padding-top: 30px;
     margin-left: 8% ;
     position:-webkit-sticky;
-<<<<<<< HEAD
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding: 15px;
-    place-items: center;
-}
-
-.grid img {
-    width: 150px;
-    height: 215px;
-    object-fit: cover;
-}
-
-.judul {
-    color: #EBEAEF;
-    font-family:'Poppins',sans-serif;
-    text-align: center;
-}
-
-a {
-    text-decoration: none;
-    color: #EBEAEF;
-}
-
-.option {
-    padding-bottom: 80px;
-    color: #EBEAEF;
-    font-family:'Poppins',sans-serif;
-    display: flex;
-    place-content: center;
-    padding-top: 20px;
-}
-
-.array {
-    padding-left: 20px;
-    padding-right: 20px;
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }

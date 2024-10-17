@@ -3,10 +3,7 @@
     padding: 0;
     box-sizing: inherit;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .grupdetail{
     display: flex;
     padding-top: 20px;
@@ -15,15 +12,10 @@
     padding-bottom: 5px;
 }
 
-<<<<<<< HEAD
 .grupdetail img{
     margin-right: 20px;
     width:300px;
     height:300px;
-=======
-img{
-    margin-right: 20px;
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }
 
 .elemen {
@@ -35,26 +27,17 @@ img{
     font-size: 36px;
     font-weight: 500;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .author {
     font-size: 32px;
     font-weight: 500;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .year {
     font-size: 32px;
     font-weight: 500;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .tag {
     background-color: #514C5C;
     border-radius: 10px;
@@ -63,10 +46,7 @@ img{
     display: flex;
     margin-top: 20px;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .tag p {
     text-align: center;
     place-content: center;
@@ -79,23 +59,13 @@ img{
     font-weight: 400;
     margin-left: 20px;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 .tdesc {
     font-size: 28px;
     font-weight: 400;
 }
-<<<<<<< HEAD
 
 .sdesc {
     font-size: 20px;
     font-weight: 400;
 }
-=======
-.sdesc {
-    font-size: 20px;
-    font-weight: 400;
-}
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89

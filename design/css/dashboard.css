@@ -51,11 +51,7 @@ a {
     border-radius: 10px;
     border-width: 3px;
     text-decoration: none;
-<<<<<<< HEAD
-    color:#EBEAEF
-=======
     color:white  
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }
 
 .search::placeholder {
@@ -65,9 +61,4 @@ a {
     color: #EBEAEF;
     opacity: 1;
     font-size: 20px;
-<<<<<<< HEAD
-    font-family: 'Poppins', sans-serif;
 }
-=======
-}
->>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
