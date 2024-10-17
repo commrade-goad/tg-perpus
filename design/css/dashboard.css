@@ -1,9 +1,9 @@
+@import url('https://fonts.cdnfonts.com/css/poppins');
 .content h2 {
     color:white;
 }
 
 .content {
-    background-color: #006BFF;
     height:90vh;
     display: flex;
     justify-content: center;
@@ -38,7 +38,7 @@
     border: 2px solid white;
     border-radius: 10px;
     text-decoration: none;
-    color:white
+    color:white  
 }
 
 .search::placeholder {

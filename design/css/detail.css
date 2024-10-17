@@ -1,0 +1,62 @@
+* {  
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+.grupdetail{
+    display: flex;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 5px;
+}
+
+img{
+    margin-right: 20px;
+}
+
+.elemen {
+    font-family: 'Poppins', sans-serif;
+    color: #EBEAEF;
+}
+
+.title {
+    font-size: 36px;
+    font-weight: 500;
+}
+.author {
+    font-size: 32px;
+    font-weight: 500;
+}
+.year {
+    font-size: 32px;
+    font-weight: 500;
+}
+.tag {
+    background-color: #514C5C;
+    border-radius: 10px;
+    width: 105px;
+    height: 45px;
+    display: flex;
+    margin-top: 20px;
+}
+.tag p {
+    text-align: center;
+    place-content: center;
+    margin: auto;
+}
+
+.desc {
+    color: #EBEAEF;
+    font-family: 'Poppins',sans-serif;
+    font-weight: 400;
+    margin-left: 20px;
+}
+.tdesc {
+    font-size: 28px;
+    font-weight: 400;
+}
+.sdesc {
+    font-size: 20px;
+    font-weight: 400;
+}

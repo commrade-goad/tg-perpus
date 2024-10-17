@@ -1,0 +1,70 @@
+* {  
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+img {
+    width: 150px;
+    height: 215px;
+    object-fit: cover;
+}
+.judul {
+    color: #EBEAEF;
+    font-family:'Poppins',sans-serif;
+    text-align: center;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 15px;
+    place-items: center;
+}
+.option {
+    padding-bottom: 80px;
+    color: #EBEAEF;
+    font-family:'Poppins',sans-serif;
+    display: flex;
+    place-content: center;
+    padding-top: 20px;
+}
+.array {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.content1 {
+    text-align: center;
+    padding: 20px;
+}
+
+.search1 {
+    font-size:20px;
+    padding-left:20px;
+    width:50%;
+    height:50px;
+    background-color: transparent;
+    border: 3px solid white;
+    border-radius: 12px;
+    color:#EBEAEF;
+}
+.search1::placeholder {
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    color: #EBEAEF;
+    opacity: 1;
+    font-size: 20px;
+}
+.jenis {
+    font-size: 20px;
+    color: #EBEAEF;
+    font-family: "Montserrat", sans-serif;
+    font-weight: bold;
+    padding-top: 20px;
+    display: inline;
+}
+.jenis p {
+    padding-top: 30px;
+    margin-left: 8% ;
+    position:-webkit-sticky;
+}
