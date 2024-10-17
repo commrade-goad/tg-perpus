@@ -15,13 +15,12 @@ async fn main() {
     // Create the router with the routes
     let app = Router::new()
         .route("/get_tag", get(get_tag))
-        .route("/search", get(search));
+        .route("/search", get(search_book));
 
     // Define the address to run the server
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
     println!("Server running at http://{}:{}", ip, port);
-    test();
 
     axum::serve(addr, app).await.unwrap();
 }

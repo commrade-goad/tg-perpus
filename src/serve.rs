@@ -25,8 +25,8 @@ pub struct SearchParams {
 }
 
 // Handler for `/search?q={query}`
-pub async fn search(Query(params): Query<SearchParams>) -> impl IntoResponse {
-    let books = sample_books();
-    Json(books)
+pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoResponse {
+    let res = s_search_book(&params.q);
+    Json(res)
 }
 

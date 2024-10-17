@@ -40,16 +40,21 @@ fn vectorize_book(documents: Vec<book::Book>) -> Vec<HashMap<String, f64>> {
 
 fn vectorize_word(words: &str, vector_book: Vec<HashMap<String, f64>>) -> HashMap<String, f64> {
     let mut result: HashMap<String, f64> = HashMap::new();
-    let word = words.split_whitespace();
-    for w in word {
-        *result.entry(w.to_string().to_lowercase()).or_insert(0.0) += 1.0;
-    }
-    for obj in vector_book {
-        for (key, _) in obj {
-            let _ = *result.entry(key.to_string().to_lowercase()).or_insert(0.0);
+    let keywords: Vec<String> = words.split_whitespace().map(|w| w.to_lowercase()).collect();
+
+    for w in keywords {
+        *result.entry(w.clone()).or_insert(0.0) += 1.0;
+
+        for obj in &vector_book {
+            for (key, _) in obj {
+                if key.contains(&w) && w.len() >= 2{
+                    *result.entry(key.clone()).or_insert(0.0) += 1.0;
+                }
+            }
         }
     }
-    return result
+    
+    result
 }
 
 fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -> f64 {
@@ -67,8 +72,7 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
     dot_product / (magnitude1 * magnitude2)
 }
 
-pub fn test() -> () {
-    let keyword: &str = "programming";
+pub fn s_search_book(keyword: &str) -> Vec<f64> { 
     let book: Vec<book::Book> = sample_books();
     let stuff = vectorize_book(book);
     let stuff2 = vectorize_word(&keyword, stuff.clone());
@@ -76,5 +80,5 @@ pub fn test() -> () {
     for obj in stuff {
         kesamaan.push(cosine_similarity(&stuff2, &obj))
     }
-    println!("{:?}", kesamaan);
+    return kesamaan;
 }

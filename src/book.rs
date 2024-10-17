@@ -21,5 +21,10 @@ pub fn sample_books() -> Vec<Book> {
             author: "Andrew Hunt and David Thomas".to_string(),
             tags: vec!["programming".to_string(), "pragmatism".to_string()],
         },
+        Book {
+            title: "The C Programming Language".to_string(),
+            author: "Linus Torvald".to_string(),
+            tags: vec!["c".to_string(), "programming".to_string(), "linus".to_string()],
+        },
     ]
 }
