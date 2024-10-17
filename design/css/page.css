@@ -42,21 +42,6 @@
     font-size: 20px;
 }
 
-.jenis {
-    font-size: 20px;
-    color: #EBEAEF;
-    font-family: "Montserrat", sans-serif;
-    font-weight: bold;
-    padding-top: 20px;
-    display: inline;
-}
-
-.jenis p {
-    padding-top: 30px;
-    margin-left: 8% ;
-    position:-webkit-sticky;
-}
-
 .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
