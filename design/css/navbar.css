@@ -13,17 +13,26 @@ body {
     background-color: #3B73CA;
 }
 
+body {
+    -webkit-box-sizing: border-box;
+    
+    background-color: #3B73CA;
+}
+
 .header {
     text-align:center;
     background-color: #024CAA;
     color:white;    
     padding:20px;
     width: 100%;
+<<<<<<< HEAD
 }
 
 .header a {
     text-decoration: none;
     color:white;
+=======
+>>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }
 
 .text {
@@ -43,9 +52,18 @@ body {
     width: 100%;
     bottom: 0;
     left: 0;
+<<<<<<< HEAD
+=======
+    position: fixed;
+
+>>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }
 .footer p {
     font-family: 'Poppins', sans-serif;
     font-size:18px;
     font-weight: 400;
+<<<<<<< HEAD
+=======
+/* padding-bottom: 20px; */
+>>>>>>> 03a1836d2bbf6ed5ef5e39c4fea7a6a00861fe89
 }
