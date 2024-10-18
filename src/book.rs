@@ -1,18 +1,19 @@
 use serde_derive::{Deserialize, Serialize};
 
 // Data model for books and tags
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Book {
     pub id: i32,
     pub title: String,
     pub author: String,
+    pub desc: String,
     pub tags: Vec<String>,
     pub year: String,
     pub cover: String,
 }
 
 // Sample book data
-pub fn sample_books() -> Vec<Book> {
+/* pub fn sample_books() -> Vec<Book> {
     vec![
         Book {
             id: 0,
@@ -39,4 +40,4 @@ pub fn sample_books() -> Vec<Book> {
             cover: "".to_string()
         },
     ]
-}
+} */

@@ -54,6 +54,7 @@ async fn main() {
     let parsed: ProgArgs = parse_args(args).unwrap_or(ProgArgs::default_value());
     let ip: &str = "0.0.0.0";
     let port: &str = &parsed.port;
+
     set_sql_path_val(&parsed.sql_path);
 
     let combine: &str = &format!("{}:{}", ip, port);
@@ -65,8 +66,6 @@ async fn main() {
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
     println!("Server running at http://{}:{}", ip, port);
-
-    let _ = read_book();
 
     axum::serve(addr, app).await.unwrap();
 }

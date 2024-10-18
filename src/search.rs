@@ -1,4 +1,5 @@
-use crate::book::{self, sample_books};
+use crate::book;
+use crate::sql;
 use std::collections::HashMap;
 
 fn vectorize_book(documents: Vec<book::Book>) -> Vec<HashMap<String, f64>> {
@@ -48,7 +49,8 @@ fn vectorize_word(words: &str, vector_book: Vec<HashMap<String, f64>>) -> HashMa
 
         for obj in &vector_book {
             for (key, _) in obj {
-                if key.contains(&w) && w.len() >= 2{
+                // if key.contains(&w) && w.len() >= 2{
+                if key.contains(&w){
                     *result.entry(key.clone()).or_insert(0.0) += 1.0;
                 }
             }
@@ -74,8 +76,9 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
 }
 
 pub fn s_search_book(keyword: &str) -> Vec<f64> { 
-    let book: Vec<book::Book> = sample_books();
+    let book: Vec<book::Book> = sql::read_book().unwrap();
     let stuff = vectorize_book(book);
+    println!("{:?}", stuff);
     let stuff2 = vectorize_word(&keyword, stuff.clone());
     let mut kesamaan: Vec<f64> = Vec::new();
     for obj in stuff {
