@@ -4,7 +4,7 @@ mod search;
 mod sql;
 use axum::{routing::get, Router};
 use serve::*;
-use sql::set_sql_path_val;
+use sql::{set_sql_path_val, read_book};
 use std::env;
 
 struct ProgArgs {
@@ -58,15 +58,15 @@ async fn main() {
 
     let combine: &str = &format!("{}:{}", ip, port);
 
-    // Create the router with the routes
     let app = Router::new()
         .route("/get_tag", get(get_tag))
         .route("/search", get(search_book));
 
-    // Define the address to run the server
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
     println!("Server running at http://{}:{}", ip, port);
+
+    let _ = read_book();
 
     axum::serve(addr, app).await.unwrap();
 }
