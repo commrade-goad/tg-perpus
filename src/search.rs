@@ -1,98 +1,85 @@
+use crate::book::{self, sample_books};
 use std::collections::HashMap;
 
-fn tfidf_vectorize(documents: &[&str]) -> Vec<Vec<f64>> {
-    let mut term_freq = HashMap::new();
-    let doc_count = documents.len() as f64;
-
+fn vectorize_book(documents: Vec<book::Book>) -> Vec<HashMap<String, f64>> {
+    let mut all_word_count: Vec<HashMap<String, f64>> = Vec::new();
     for doc in documents {
-        let terms: Vec<&str> = doc.split_whitespace().collect();
-        let unique_terms: HashMap<_, _> = terms.iter().cloned().map(|a| {
-            (a, 0)
-        }).collect();        
-        for term in unique_terms.keys() {
-            *term_freq.entry(*term).or_insert(0.0) += 1.0;
+        let mut word_count = HashMap::new();
+        for word in doc.title.clone().split_whitespace() {
+            *word_count.entry(word.to_lowercase().to_string()).or_insert(0.0) += 1.0;
+        }
+        for word in doc.author.clone().split_whitespace() {
+            *word_count.entry(word.to_lowercase().to_string()).or_insert(0.0) += 1.0;
+        }
+        for word in doc.tags.clone() {
+            *word_count.entry(word.to_lowercase().to_string()).or_insert(0.0) += 1.0;
+        }
+        *word_count.entry(doc.year.to_string()).or_insert(0.0) += 1.0;
+        all_word_count.push(word_count);
+    }
+
+    let mut result: Vec<HashMap<String, f64>> = Vec::new();
+
+    for i in 0..all_word_count.len() {
+        result.push(all_word_count[i].clone());
+        if i < all_word_count.len() - 1 {
+            let tmp = all_word_count[i+1].clone();
+            for (key, _) in tmp{
+                let _ = *result[i].entry(key).or_insert(0.0);
+            }
+        } else {
+            let tmp = all_word_count[0].clone();
+            for (key, _) in tmp{
+                let _ = *result[i].entry(key).or_insert(0.0);
+            }
         }
     }
 
-    let mut idf = HashMap::new();
-    for (term, count) in term_freq.iter() {
-        idf.insert(*term, (doc_count / *count).log(10.0)); // Use log to calculate IDF
-    }
 
-    let mut tfidf_matrix = vec![vec![0.0; term_freq.len()]; documents.len()];
-    for (doc_idx, doc) in documents.iter().enumerate() {
-        let terms: Vec<&str> = doc.split_whitespace().collect();
-        let term_count = terms.len() as f64;
-        let mut term_freq = HashMap::new();
+    return result;
+}
 
-        for term in terms {
-            *term_freq.entry(term).or_insert(0.0) += 1.0;
-        }
+fn vectorize_word(words: &str, vector_book: Vec<HashMap<String, f64>>) -> HashMap<String, f64> {
+    let mut result: HashMap<String, f64> = HashMap::new();
+    let keywords: Vec<String> = words.split_whitespace().map(|w| w.to_lowercase()).collect();
 
-        for (i, (term, &count)) in term_freq.iter().enumerate() {
-            if let Some(&idf_value) = idf.get(term) {
-                tfidf_matrix[doc_idx][i] = (count / term_count) * idf_value;
+    for w in keywords {
+        *result.entry(w.clone()).or_insert(0.0) += 1.0;
+
+        for obj in &vector_book {
+            for (key, _) in obj {
+                if key.contains(&w) && w.len() >= 2{
+                    *result.entry(key.clone()).or_insert(0.0) += 1.0;
+                }
             }
         }
     }
     
-    tfidf_matrix
-}
-
-fn cosine_similarity(matrix: &[Vec<f64>]) -> Vec<Vec<f64>> {
-    let mut sim = vec![vec![0.0; matrix.len()]; matrix.len()];
-    let norm: Vec<f64> = matrix.iter()
-        .map(|row| row.iter().map(|&x| x.powi(2)).sum::<f64>().sqrt())
-        .collect();
-
-    for i in 0..matrix.len() {
-        for j in 0..matrix.len() {
-            sim[i][j] = matrix[i].iter().zip(&matrix[j]).map(|(&a, &b)| a * b).sum();
-        }
-    }
-
-    for i in 0..sim.len() {
-        for j in 0..sim.len() {
-            sim[i][j] /= norm[i] * norm[j];
-        }
-    }
-
-    sim
-}
-
-fn cari_buku_mirip(judul_buku: &str, df: &[(String, String)], cosine_sim: &[Vec<f64>]) -> Vec<String> {
-    let idx = df.iter().position(|(judul, _)| judul == judul_buku).unwrap();
-    let sim_scores: Vec<(usize, f64)> = cosine_sim[idx]
-        .iter()
-        .enumerate()
-        .map(|(i, &score)| (i, score))
-        .collect();    
-
-    let mut sorted_scores = sim_scores.clone();
-    sorted_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-
-    let mut result = Vec::new();
-    for (i, score) in sorted_scores.iter().skip(1).take(5) {
-        println!("{}: {}", i, score);
-        result.push(df[*i].0.clone());
-    }
     result
 }
 
-pub fn test() {
-    let data_buku = vec![
-        (String::from("Buku A"), String::from("Ini adalah deskripsi tentang Buku A.")),
-        (String::from("Buku B"), String::from("Deskripsi Buku B berbicara tentang banyak hal menarik.")),
-        (String::from("Buku C"), String::from("Buku C menjelaskan konsep-konsep dasar dalam ilmu pengetahuan.")),
-        (String::from("Buku D"), String::from("Ini adalah deskripsi tentang Buku D.")),
-    ];
+fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -> f64 {
+    let dot_product: f64 = vec1.iter().filter_map(|(k, v1)| {
+        vec2.get(k).map(|v2| v1 * v2)
+    }).sum();
 
-    let documents: Vec<&str> = data_buku.iter().map(|(_, desc)| desc.as_str()).collect();
-    
-    let tfidf_matrix = tfidf_vectorize(&documents);
-    let cosine_sim = cosine_similarity(&tfidf_matrix);
+    let magnitude1: f64 = vec1.values().map(|v| v * v).sum::<f64>().sqrt();
+    let magnitude2: f64 = vec2.values().map(|v| v * v).sum::<f64>().sqrt();
 
-    let buku_mirip = cari_buku_mirip("Buku A", &data_buku, &cosine_sim);
-    println!("Buku mirip dengan 'Buku A': {:?}", buku_mirip);
+    if magnitude1 == 0.0 || magnitude2 == 0.0 {
+        return 0.0;
+    }
+
+    dot_product / (magnitude1 * magnitude2)
 }
 
+pub fn s_search_book(keyword: &str) -> Vec<f64> { 
+    let book: Vec<book::Book> = sample_books();
+    let stuff = vectorize_book(book);
+    let stuff2 = vectorize_word(&keyword, stuff.clone());
+    let mut kesamaan: Vec<f64> = Vec::new();
+    for obj in stuff {
+        kesamaan.push(cosine_similarity(&stuff2, &obj))
+    }
+    return kesamaan;
+}
