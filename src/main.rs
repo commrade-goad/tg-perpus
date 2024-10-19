@@ -61,7 +61,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/get_tag", get(get_tag))
-        .route("/search", get(search_book));
+        .route("/search", get(search_book))
+        .route("/book_info", get(get_book_info));
 
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 

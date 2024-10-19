@@ -76,7 +76,7 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
 }
 
 pub fn s_search_book(keyword: &str) -> Vec<f64> { 
-    let book: Vec<book::Book> = sql::read_book().unwrap();
+    let book: Vec<book::Book> = sql::sql_read_book().unwrap();
     let stuff = vectorize_book(book);
     println!("{:?}", stuff);
     let stuff2 = vectorize_word(&keyword, stuff.clone());

@@ -84,7 +84,7 @@ fn check_all_table(conn: &Connection) -> Result<()> {
     return Ok(())
 }
 
-pub fn read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>> {
+pub fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>> {
     let mut res: Vec<book::Tag> = Vec::new();
     let conn = Connection::open(get_sql_path_val())?;
     let _ = check_all_table(&conn);
@@ -101,7 +101,7 @@ pub fn read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>> {
     return Ok(res)
 }
 
-pub fn read_book() -> Result<Vec<book::Book>> {
+pub fn sql_read_book() -> Result<Vec<book::Book>> {
     let mut res: Vec<book::Book> = Vec::new();
     let conn = Connection::open(get_sql_path_val())?;
     let _ = check_all_table(&conn);
@@ -146,4 +146,52 @@ pub fn read_book() -> Result<Vec<book::Book>> {
         res.push(book_data);
     }
     Ok(res)
+}
+
+pub fn sql_get_book_info(book_id: i32) -> Result<book::Book> {
+    let res: book::Book;
+    let conn = Connection::open(get_sql_path_val())?;
+    let _ = check_all_table(&conn);
+
+    // Get all books with their details
+    let mut stmt = conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book where book_id = {}", book_id))?;
+    let books_iter = stmt.query_map([], |row| {
+        Ok(book::Book {
+            id: row.get(0)?,
+            title: row.get(1)?,
+            author: row.get(2)?,
+            desc: row.get(3)?,
+            tags: vec![], // Placeholder for tags, will fill this later
+            year: row.get(4)?,
+            cover: row.get(5)?,
+        })
+    })?;
+
+    // Loop through each book and fetch tags
+    for book in books_iter {
+        let mut book_data = book?;
+        
+        // Fetch tags for the current book_id
+        let mut tag_stmt = conn.prepare("
+            SELECT at.name, at.tags_id 
+            FROM book_tags bt 
+            JOIN all_tags at ON bt.tags_id = at.tags_id 
+            WHERE bt.book_id = ?
+        ")?;
+        let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
+            let tag_name: String = row.get(0)?;
+            let tag_id: i32 = row.get(1)?;
+            let tmp_res: Tag = Tag { id: tag_id, name: tag_name };
+            Ok(tmp_res) // Convert tags_id to String
+        })?;
+        
+        // Collect tags into the book struct
+        for tag in tag_iter {
+            book_data.tags.push(tag?);
+        }
+
+        res = book_data;
+        return Ok(res)
+    }
+    Err(rusqlite::Error::InvalidQuery)
 }
