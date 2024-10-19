@@ -84,11 +84,11 @@ fn check_all_table(conn: &Connection) -> Result<()> {
     return Ok(())
 }
 
-pub fn read_tags() -> Result<Vec<book::Tag>> {
+pub fn read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>> {
     let mut res: Vec<book::Tag> = Vec::new();
     let conn = Connection::open(get_sql_path_val())?;
     let _ = check_all_table(&conn);
-    let mut stmt = conn.prepare("SELECT tags_id, name FROM all_tags")?;
+    let mut stmt = conn.prepare(&format!("SELECT tags_id, name FROM all_tags limit {} offset {}", range, from))?;
     let tags_iter = stmt.query_map([], |row| {
         Ok(book::Tag {
             id: row.get(0)?,

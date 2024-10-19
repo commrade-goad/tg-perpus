@@ -6,11 +6,11 @@ use axum::{extract::Query, response::IntoResponse, Json};
 // `/get_tag?s={startat}&e={endat}`
 #[derive(Deserialize)]
 pub struct GetTagParams {
-    s: i32,
-    e: i32,
+    f: i32,
+    r: i32,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    let res = read_tags().unwrap();
+    let res = read_tags(params.f, params.r).unwrap();
     Json(res)
 }
 
