@@ -13,7 +13,7 @@ fn vectorize_book(documents: Vec<book::Book>) -> Vec<HashMap<String, f64>> {
             *word_count.entry(word.to_lowercase().to_string()).or_insert(0.0) += 1.0;
         }
         for word in doc.tags.clone() {
-            *word_count.entry(word.to_lowercase().to_string()).or_insert(0.0) += 1.0;
+            *word_count.entry(word.name.to_lowercase().to_string()).or_insert(0.0) += 1.0;
         }
         *word_count.entry(doc.year.to_string()).or_insert(0.0) += 1.0;
         all_word_count.push(word_count);

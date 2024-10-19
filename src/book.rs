@@ -7,9 +7,15 @@ pub struct Book {
     pub title: String,
     pub author: String,
     pub desc: String,
-    pub tags: Vec<String>,
+    pub tags: Vec<Tag>,
     pub year: String,
     pub cover: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Tag {
+    pub id: i32,
+    pub name: String,
 }
 
 // Sample book data

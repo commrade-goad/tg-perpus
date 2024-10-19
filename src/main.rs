@@ -4,7 +4,7 @@ mod search;
 mod sql;
 use axum::{routing::get, Router};
 use serve::*;
-use sql::{set_sql_path_val, read_book};
+use sql::set_sql_path_val;
 use std::env;
 
 struct ProgArgs {

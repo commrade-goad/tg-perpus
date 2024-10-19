@@ -1,5 +1,5 @@
-use crate::book::*;
 use crate::search::*;
+use crate::sql::read_tags;
 use serde_derive::Deserialize;
 use axum::{extract::Query, response::IntoResponse, Json};
 
@@ -10,7 +10,8 @@ pub struct GetTagParams {
     e: i32,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let res = read_tags().unwrap();
+    Json(res)
 }
 
 // `/search?q={query}`
