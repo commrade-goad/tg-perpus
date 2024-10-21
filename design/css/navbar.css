@@ -5,6 +5,7 @@
     margin: 0;
     padding: 0;
     box-sizing: inherit;
+    text-decoration: none;
 }
 
 body {
@@ -12,26 +13,13 @@ body {
     background-color: #3B73CA;
 }
 
-.header {
+.header h1{
     text-align:center;
     background-color: #024CAA;
     color:white;    
-    padding:20px;
-    width: 100%;
-}
-
-.text {
-    width: auto;
+    padding:15px;
+    text-align: center;
     font-family: 'Poppins', sans-serif;
-}
-
-.text a {
-    text-decoration: none;
-    color: white;
-}
-
-.text:hover {
-    text-shadow: 2px 3px 11px #000000;
 }
 
 .footer {
@@ -39,9 +27,6 @@ body {
     background-color: #024CAA;
     text-align: center;
     color:white;
-    width: 100%;
-    bottom: 0;
-    left: 0;
 }
 
 .footer p {
