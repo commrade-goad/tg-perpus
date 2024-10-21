@@ -22,17 +22,14 @@
     outline: none;
 }
 
+.icon {
+    color:white;
+}
+
 .search::placeholder {
     color: #EBEAEF;
     opacity: 1;
     font-size: 20px;
-}
-
-.icon {
-    font-size: 25px;
-    color: white;
-    text-decoration: none;
-    padding-left: 10px;
 }
 
 .grupdetail{
@@ -90,7 +87,7 @@
     padding:20px;
     font-size: 25px;
 }
-/* 
+
 .tdesc {
     font-size: 28px;
     font-weight: 400;
@@ -99,4 +96,4 @@
 .sdesc {
     font-size: 20px;
     font-weight: 400;
-} */
+}
