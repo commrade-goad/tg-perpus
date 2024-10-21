@@ -1,15 +1,12 @@
 @import url('https://fonts.cdnfonts.com/css/poppins');
 
-.content h2 {
-    color:white;
-}
-
 .content {
     height:90vh;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    color:white;
 }
 
 .icon {
@@ -30,6 +27,7 @@
     color:#EBEAEF;
     margin-right: 5px;
     outline:none;
+    text-decoration: none;
 }
 
 .search::placeholder {
@@ -39,11 +37,6 @@
     color: #EBEAEF;
     opacity: 1;
     font-size: 20px;
-}
-
-a {
-    text-decoration: none;
-    color: #EBEAEF;
 }
 
 .tag {

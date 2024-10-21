@@ -4,6 +4,37 @@
     box-sizing: inherit;
 }
 
+.content {
+    text-align: center;
+    padding:20px;
+}
+
+.search {
+    width: 100%;
+    max-width: 60%;
+    font-size: 20px;
+    padding-left: 20px;
+    height: 40px;
+    background-color: transparent;
+    border: 3px solid white;
+    border-radius: 12px;
+    color: #EBEAEF;
+    outline: none;
+}
+
+.search::placeholder {
+    color: #EBEAEF;
+    opacity: 1;
+    font-size: 20px;
+}
+
+.icon {
+    font-size: 25px;
+    color: white;
+    text-decoration: none;
+    padding-left: 10px;
+}
+
 .grupdetail{
     display: flex;
     padding-top: 20px;
@@ -12,7 +43,7 @@
     padding-bottom: 5px;
 }
 
-img{
+.grupdetail img{
     margin-right: 20px;
 }
 
@@ -56,8 +87,10 @@ img{
     font-family: 'Poppins',sans-serif;
     font-weight: 400;
     margin-right: 22px;
+    padding:20px;
+    font-size: 25px;
 }
-
+/* 
 .tdesc {
     font-size: 28px;
     font-weight: 400;
@@ -66,4 +99,4 @@ img{
 .sdesc {
     font-size: 20px;
     font-weight: 400;
-}
+} */
