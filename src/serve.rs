@@ -1,16 +1,17 @@
-use crate::book::*;
-use crate::search::*;
+use crate::{search::*, sql::sql_get_book_info};
+use crate::sql::sql_read_tags;
 use serde_derive::Deserialize;
 use axum::{extract::Query, response::IntoResponse, Json};
 
 // `/get_tag?s={startat}&e={endat}`
 #[derive(Deserialize)]
 pub struct GetTagParams {
-    s: i32,
-    e: i32,
+    f: i32,
+    r: i32,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let res = sql_read_tags(params.f, params.r).unwrap();
+    Json(res)
 }
 
 // `/search?q={query}`
@@ -29,7 +30,9 @@ pub struct BookInfoParams{
     id: String,
 }
 pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let convert: i32 = params.id.trim().parse().unwrap();
+    let res = sql_get_book_info(convert).unwrap();
+    Json(res)
 }
 
 // `/get_book_with_tags?t={tag}`
