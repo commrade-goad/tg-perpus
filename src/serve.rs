@@ -1,4 +1,4 @@
-use crate::{search::*, sql::sql_get_book_info};
+use crate::{search::*, sql::sql_get_book_info, sql::sql_read_specified_tagged_book};
 use crate::sql::sql_read_tags;
 use serde_derive::Deserialize;
 use axum::{extract::Query, response::IntoResponse, Json};
@@ -50,13 +50,27 @@ pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoRes
     }
 }
 
-// `/get_book_with_tags?t={tag}`
+// `/get_book_from_tag?id={tag}&f={from}&r={range}`
 #[derive(Deserialize)]
 pub struct GetBookListFromTagParams{
-    t: String,
+    f: i32,
+    r: i32,
+    id: String,
 }
 pub async fn get_book_from_tag(Query(params): Query<GetBookListFromTagParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
+    if convert <= -1 {
+        return Json(None);
+    }
+    match sql_read_specified_tagged_book(convert, params.r, params.f) {
+        Ok(val) => {
+            if val.len() <= 0 {
+                return Json(None)
+            }
+            return Json(Some(val))
+        },
+        Err(_) => return Json(None)
+    }
 }
 
 // `/add_book?t={title}&a={author}&tg={tag} {tag}&im={image blob}`
