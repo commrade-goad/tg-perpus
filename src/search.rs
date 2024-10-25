@@ -90,24 +90,27 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
     dot_product / (magnitude1 * magnitude2)
 }
 
-pub fn s_search_book(keyword: &str) -> (Vec<book::Book>, Vec<SortedData>) {
-    let book: Vec<book::Book> = sql::sql_read_book().unwrap();
-    let stuff = vectorize_book(&book);
-    let stuff2 = vectorize_word(&keyword, stuff.clone());
-    let mut kesamaan: Vec<SortedData> = Vec::new();
-    for i in 0..stuff.len() {
-        let obj = &stuff[i];
-        kesamaan.push(SortedData {
-            index: i as i32,
-            score: cosine_similarity(&stuff2, &obj),
-        })
-    }
-    let mut book_res: Vec<book::Book> = Vec::new();
-    kesamaan.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    for k in &kesamaan {
-        if k.score > 0.0 {
-            book_res.push(book[k.index as usize].clone());
+pub async fn s_search_book(keyword: &str) -> (Vec<book::Book>, Vec<SortedData>) {
+    let keyword_str: String = keyword.to_string();
+    tokio::task::spawn_blocking(move || {
+        let book: Vec<book::Book> = sql::sql_read_book().unwrap();
+        let stuff = vectorize_book(&book);
+        let stuff2 = vectorize_word(&keyword_str, stuff.clone());
+        let mut kesamaan: Vec<SortedData> = Vec::new();
+        for i in 0..stuff.len() {
+            let obj = &stuff[i];
+            kesamaan.push(SortedData {
+                index: i as i32,
+                score: cosine_similarity(&stuff2, &obj),
+            })
         }
-    }
-    return (book_res, kesamaan);
+        let mut book_res: Vec<book::Book> = Vec::new();
+        kesamaan.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        for k in &kesamaan {
+            if k.score > 0.0 {
+                book_res.push(book[k.index as usize].clone());
+            }
+        }
+        return (book_res, kesamaan);
+    }).await.unwrap()
 }

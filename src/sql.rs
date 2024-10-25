@@ -82,83 +82,88 @@ fn check_all_table(conn: &Connection) -> Result<()> {
     return Ok(());
 }
 
-pub fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>> {
-    let mut res: Vec<book::Tag> = Vec::new();
-    let conn = Connection::open(get_sql_path_val())?;
-    let _ = check_all_table(&conn);
-    let mut stmt = conn.prepare(&format!(
-        "SELECT tags_id, name FROM all_tags limit {} offset {}",
-        range, from
-    ))?;
-    let tags_iter = stmt.query_map([], |row| {
-        Ok(book::Tag {
-            id: row.get(0)?,
-            name: row.get(1)?,
-        })
-    })?;
-    for tag in tags_iter {
-        res.push(tag.unwrap());
-    }
-    return Ok(res);
+pub async fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>, ()> {
+    tokio::task::spawn_blocking(move || {
+        let mut res: Vec<book::Tag> = Vec::new();
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
+        let mut stmt = conn.prepare(&format!(
+            "SELECT tags_id, name FROM all_tags limit {} offset {}",
+            range, from
+        )).unwrap();
+        let tags_iter = stmt.query_map([], |row| {
+            Ok(book::Tag {
+                id: row.get(0)?,
+                name: row.get(1)?,
+            })
+        }).unwrap();
+        for tag in tags_iter {
+            res.push(tag.unwrap());
+        }
+        return Ok::<Vec<book::Tag>, ()>(res);
+    }).await.unwrap()
 }
 
-pub fn sql_read_specified_tagged_book(tag_id: i32, lim: i32, off: i32) -> Result<Vec<book::Book>> {
-    let mut res: Vec<book::Book> = Vec::new();
-    let conn = Connection::open(get_sql_path_val())?;
-    let _ = check_all_table(&conn);
+pub async fn sql_read_specified_tagged_book(tag_id: i32, lim: i32, off: i32) -> Result<Vec<book::Book>, ()> {
+    tokio::task::spawn_blocking(move || {
 
-    // Get all books with their details
-    let mut stmt = conn.prepare(&format!(
-        "SELECT b.book_id, b.title, b.author, b.desc, b.year, b.cover
-        FROM book b
-        JOIN book_tags bt ON b.book_id = bt.book_id
-        JOIN all_tags at ON bt.tags_id = at.tags_id
-        WHERE at.tags_id = {} limit {} offset {}",
-        tag_id, lim, off
-    ))?;
-    let books_iter = stmt.query_map([], |row| {
-        Ok(book::Book {
-            id: row.get(0)?,
-            title: row.get(1)?,
-            author: row.get(2)?,
-            desc: row.get(3)?,
-            tags: vec![], // Placeholder for tags, will fill this later
-            year: row.get(4)?,
-            cover: row.get(5)?,
-        })
-    })?;
+        let mut res: Vec<book::Book> = Vec::new();
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
 
-    // Loop through each book and fetch tags
-    for book in books_iter {
-        let mut book_data = book?;
+        // Get all books with their details
+        let mut stmt = conn.prepare(&format!(
+            "SELECT b.book_id, b.title, b.author, b.desc, b.year, b.cover
+            FROM book b
+            JOIN book_tags bt ON b.book_id = bt.book_id
+            JOIN all_tags at ON bt.tags_id = at.tags_id
+            WHERE at.tags_id = {} limit {} offset {}",
+            tag_id, lim, off
+        )).unwrap();
+        let books_iter = stmt.query_map([], |row| {
+            Ok(book::Book {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                author: row.get(2)?,
+                desc: row.get(3)?,
+                tags: vec![], // Placeholder for tags, will fill this later
+                year: row.get(4)?,
+                cover: row.get(5)?,
+            })
+        }).unwrap();
 
-        // Fetch tags for the current book_id
-        let mut tag_stmt = conn.prepare(
-            "
-            SELECT at.name, at.tags_id 
-            FROM book_tags bt 
-            JOIN all_tags at ON bt.tags_id = at.tags_id 
-            WHERE bt.book_id = ?
-        ",
-        )?;
-        let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
-            let tag_name: String = row.get(0)?;
-            let tag_id: i32 = row.get(1)?;
-            let tmp_res: Tag = Tag {
-                id: tag_id,
-                name: tag_name,
-            };
-            Ok(tmp_res) // Convert tags_id to String
-        })?;
+        // Loop through each book and fetch tags
+        for book in books_iter {
+            let mut book_data = book.unwrap();
 
-        // Collect tags into the book struct
-        for tag in tag_iter {
-            book_data.tags.push(tag?);
+            // Fetch tags for the current book_id
+            let mut tag_stmt = conn.prepare(
+                "
+                SELECT at.name, at.tags_id 
+                FROM book_tags bt 
+                JOIN all_tags at ON bt.tags_id = at.tags_id 
+                WHERE bt.book_id = ?
+                ",
+            ).unwrap();
+            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
+                let tag_name: String = row.get(0)?;
+                let tag_id: i32 = row.get(1)?;
+                let tmp_res: Tag = Tag {
+                    id: tag_id,
+                    name: tag_name,
+                };
+                Ok(tmp_res) // Convert tags_id to String
+            }).unwrap();
+
+            // Collect tags into the book struct
+            for tag in tag_iter {
+                book_data.tags.push(tag.unwrap());
+            }
+
+            res.push(book_data);
         }
-
-        res.push(book_data);
-    }
-    Ok(res)
+        Ok(res)
+    }).await.unwrap()
 }
 
 pub fn sql_read_book() -> Result<Vec<book::Book>> {
@@ -213,60 +218,63 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
     Ok(res)
 }
 
-pub fn sql_get_book_info(book_id: i32) -> Result<book::Book> {
-    let res: book::Book;
-    let conn = Connection::open(get_sql_path_val())?;
-    let _ = check_all_table(&conn);
+pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
+    tokio::task::spawn_blocking(move || {
 
-    // Get all books with their details
-    let mut stmt = conn.prepare(&format!(
-        "SELECT book_id, title, author, desc, year, cover FROM book where book_id = {}",
-        book_id
-    ))?;
-    let books_iter = stmt.query_map([], |row| {
-        Ok(book::Book {
-            id: row.get(0)?,
-            title: row.get(1)?,
-            author: row.get(2)?,
-            desc: row.get(3)?,
-            tags: vec![], // Placeholder for tags, will fill this later
-            year: row.get(4)?,
-            cover: row.get(5)?,
-        })
-    })?;
+        let res: book::Book;
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
 
-    // Loop through each book and fetch tags
-    for book in books_iter {
-        let mut book_data = book?;
+        // Get all books with their details
+        let mut stmt = conn.prepare(&format!(
+            "SELECT book_id, title, author, desc, year, cover FROM book where book_id = {}",
+            book_id
+        )).unwrap();
+        let books_iter = stmt.query_map([], |row| {
+            Ok(book::Book {
+                id: row.get(0).unwrap(),
+                title: row.get(1).unwrap(),
+                author: row.get(2).unwrap(),
+                desc: row.get(3).unwrap(),
+                tags: vec![], // Placeholder for tags, will fill this later
+                year: row.get(4).unwrap(),
+                cover: row.get(5).unwrap(),
+            })
+        }).unwrap();
 
-        // Fetch tags for the current book_id
-        let mut tag_stmt = conn.prepare(
-            "
-            SELECT at.name, at.tags_id 
-            FROM book_tags bt 
-            JOIN all_tags at ON bt.tags_id = at.tags_id 
-            WHERE bt.book_id = ?
-        ",
-        )?;
-        let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
-            let tag_name: String = row.get(0)?;
-            let tag_id: i32 = row.get(1)?;
-            let tmp_res: Tag = Tag {
-                id: tag_id,
-                name: tag_name,
-            };
-            Ok(tmp_res) // Convert tags_id to String
-        })?;
+        // Loop through each book and fetch tags
+        for book in books_iter {
+            let mut book_data = book.unwrap();
 
-        // Collect tags into the book struct
-        for tag in tag_iter {
-            book_data.tags.push(tag?);
+            // Fetch tags for the current book_id
+            let mut tag_stmt = conn.prepare(
+                "
+                SELECT at.name, at.tags_id 
+                FROM book_tags bt 
+                JOIN all_tags at ON bt.tags_id = at.tags_id 
+                WHERE bt.book_id = .unwrap()
+                ",
+            ).unwrap();
+            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
+                let tag_name: String = row.get(0).unwrap();
+                let tag_id: i32 = row.get(1).unwrap();
+                let tmp_res: Tag = Tag {
+                    id: tag_id,
+                    name: tag_name,
+                };
+                Ok(tmp_res) // Convert tags_id to String
+            }).unwrap();
+
+            // Collect tags into the book struct
+            for tag in tag_iter {
+                book_data.tags.push(tag.unwrap());
+            }
+
+            res = book_data;
+            return Ok(res);
         }
-
-        res = book_data;
-        return Ok(res);
-    }
-    Err(rusqlite::Error::InvalidQuery)
+        return Err(())
+    }).await.unwrap()
 }
 
 pub fn del_book_from_id() -> Result<()> {

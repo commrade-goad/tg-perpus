@@ -10,7 +10,7 @@ pub struct GetTagParams {
     r: i32,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    match sql_read_tags(params.f, params.r) {
+    match sql_read_tags(params.f, params.r).await {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
@@ -27,7 +27,7 @@ pub struct SearchParams {
     q: String,
 }
 pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoResponse {
-    let res = s_search_book(&params.q);
+    let res = s_search_book(&params.q).await;
     if res.0.len() <= 0 {
         return Json(None);
     }
@@ -44,7 +44,7 @@ pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoRes
     if convert <= -1 {
         return Json(None);
     }
-    match sql_get_book_info(convert) {
+    match sql_get_book_info(convert).await {
         Ok(val) => Json(Some(val)),
         Err(_) => Json(None),
     }
@@ -64,7 +64,7 @@ pub async fn get_book_from_tag(
     if convert <= -1 {
         return Json(None);
     }
-    match sql_read_specified_tagged_book(convert, params.r, params.f) {
+    match sql_read_specified_tagged_book(convert, params.r, params.f).await {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
