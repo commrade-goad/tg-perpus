@@ -1,7 +1,7 @@
-use crate::{search::*, sql::sql_get_book_info, sql::sql_read_specified_tagged_book};
 use crate::sql::sql_read_tags;
-use serde_derive::Deserialize;
+use crate::{search::*, sql::sql_get_book_info, sql::sql_read_specified_tagged_book};
 use axum::{extract::Query, response::IntoResponse, Json};
+use serde_derive::Deserialize;
 
 // `/get_tag?s={startat}&e={endat}`
 #[derive(Deserialize)]
@@ -10,14 +10,14 @@ pub struct GetTagParams {
     r: i32,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    match sql_read_tags(params.f, params.r){
+    match sql_read_tags(params.f, params.r) {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
             }
             return Json(Some(val));
         }
-        Err(_) => return Json(None)
+        Err(_) => return Json(None),
     }
 }
 
@@ -29,14 +29,14 @@ pub struct SearchParams {
 pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoResponse {
     let res = s_search_book(&params.q);
     if res.0.len() <= 0 {
-        return Json(None)
+        return Json(None);
     }
     Json(Some(res))
 }
 
 // `/get_book_info?id={id}`
 #[derive(Deserialize)]
-pub struct BookInfoParams{
+pub struct BookInfoParams {
     id: String,
 }
 pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoResponse {
@@ -46,18 +46,20 @@ pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoRes
     }
     match sql_get_book_info(convert) {
         Ok(val) => Json(Some(val)),
-        Err(_) => Json(None)
+        Err(_) => Json(None),
     }
 }
 
 // `/get_book_from_tag?id={tag}&f={from}&r={range}`
 #[derive(Deserialize)]
-pub struct GetBookListFromTagParams{
+pub struct GetBookListFromTagParams {
     f: i32,
     r: i32,
     id: String,
 }
-pub async fn get_book_from_tag(Query(params): Query<GetBookListFromTagParams>) -> impl IntoResponse {
+pub async fn get_book_from_tag(
+    Query(params): Query<GetBookListFromTagParams>,
+) -> impl IntoResponse {
     let convert: i32 = params.id.trim().parse().unwrap_or(-1);
     if convert <= -1 {
         return Json(None);
@@ -65,17 +67,17 @@ pub async fn get_book_from_tag(Query(params): Query<GetBookListFromTagParams>) -
     match sql_read_specified_tagged_book(convert, params.r, params.f) {
         Ok(val) => {
             if val.len() <= 0 {
-                return Json(None)
+                return Json(None);
             }
-            return Json(Some(val))
-        },
-        Err(_) => return Json(None)
+            return Json(Some(val));
+        }
+        Err(_) => return Json(None),
     }
 }
 
 // `/add_book?t={title}&a={author}&tg={tag} {tag}&im={image blob}`
 #[derive(Deserialize)]
-pub struct AddBookParams{
+pub struct AddBookParams {
     t: String,
     a: String,
     tg: String,
@@ -87,7 +89,7 @@ pub async fn add_new_book(Query(params): Query<AddBookParams>) -> impl IntoRespo
 
 // `/add_tag?n={name}&im={image blob}`
 #[derive(Deserialize)]
-pub struct AddTagParams{
+pub struct AddTagParams {
     n: String,
     im: String,
 }
@@ -97,18 +99,18 @@ pub async fn add_new_tag(Query(params): Query<AddTagParams>) -> impl IntoRespons
 
 // `/del_book?id={book_id}`
 #[derive(Deserialize)]
-pub struct DelBookParams{
+pub struct DelBookParams {
     id: String,
 }
-pub async fn del_new_book(Query(params): Query<DelBookParams>) -> impl IntoResponse {
+pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse {
     Json("NOT IMPLEMENTED YET")
 }
 
 // `/del_tag?id={tag_id}`
 #[derive(Deserialize)]
-pub struct DelTagParams{
+pub struct DelTagParams {
     id: String,
 }
-pub async fn del_new_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
+pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
     Json("NOT IMPLEMENTED YET")
 }

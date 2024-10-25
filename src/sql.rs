@@ -268,3 +268,12 @@ pub fn sql_get_book_info(book_id: i32) -> Result<book::Book> {
     }
     Err(rusqlite::Error::InvalidQuery)
 }
+
+pub fn del_book_from_id() -> Result<()> {
+    let conn = Connection::open(get_sql_path_val())?;
+    let _ = check_all_table(&conn);
+    conn.execute("
+        DELTE
+", [])?;
+    return Ok(())
+}

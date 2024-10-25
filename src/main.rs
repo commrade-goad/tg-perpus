@@ -1,6 +1,6 @@
 mod book;
-mod serve;
 mod search;
+mod serve;
 mod sql;
 use axum::{routing::get, Router};
 use serve::*;
@@ -9,12 +9,15 @@ use std::env;
 
 struct ProgArgs {
     port: String,
-    sql_path: String
+    sql_path: String,
 }
 
 impl ProgArgs {
     fn default_value() -> ProgArgs {
-        return ProgArgs { port: "8081".to_string(), sql_path: "./db.sqlite".to_string() };
+        return ProgArgs {
+            port: "8081".to_string(),
+            sql_path: "./db.sqlite".to_string(),
+        };
     }
 }
 
@@ -30,14 +33,14 @@ fn parse_args(args: Vec<String>) -> Option<ProgArgs> {
         let current_arg = &args[idx];
         match &current_arg[..] {
             "-p" | "--port" => {
-                if idx + 1 <= args.len() -1 {
-                    res.port = args[idx+1].clone();
+                if idx + 1 <= args.len() - 1 {
+                    res.port = args[idx + 1].clone();
                 }
                 idx += 1;
             }
             "-d" | "--databse" => {
-                if idx + 1 <= args.len() -1 {
-                    res.sql_path = args[idx+1].clone();
+                if idx + 1 <= args.len() - 1 {
+                    res.sql_path = args[idx + 1].clone();
                 }
                 idx += 1;
             }
