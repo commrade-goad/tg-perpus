@@ -6,10 +6,10 @@
     padding: 0;
     box-sizing: inherit;
     text-decoration: none;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    -webkit-box-sizing: border-box;
     background-color: #3B73CA;
 }
 
@@ -38,7 +38,6 @@ body {
 }
 
 .footer p {
-    font-family: 'Poppins', sans-serif;
     font-size:18px;
     font-weight: 400;
 }
