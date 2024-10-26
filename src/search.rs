@@ -112,5 +112,7 @@ pub async fn s_search_book(keyword: &str) -> (Vec<book::Book>, Vec<SortedData>) 
             }
         }
         return (book_res, kesamaan);
-    }).await.unwrap()
+    })
+    .await
+    .unwrap()
 }

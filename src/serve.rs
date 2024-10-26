@@ -1,5 +1,5 @@
-use crate::sql::*;
 use crate::search::s_search_book;
+use crate::sql::*;
 use axum::{extract::Query, response::IntoResponse, Json};
 use serde_derive::Deserialize;
 
@@ -109,7 +109,7 @@ pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse 
     }
     match sql_del_book_from_id(convert).await {
         Ok(val) => Json(Some(val)),
-        Err(_) => return Json(None)
+        Err(_) => return Json(None),
     }
 }
 
@@ -125,6 +125,6 @@ pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
     }
     match sql_del_tag_from_id(convert).await {
         Ok(val) => Json(Some(val)),
-        Err(_) => return Json(None)
+        Err(_) => return Json(None),
     }
 }
