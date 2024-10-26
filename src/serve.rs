@@ -1,5 +1,5 @@
-use crate::sql::sql_read_tags;
-use crate::{search::*, sql::sql_get_book_info, sql::sql_read_specified_tagged_book};
+use crate::sql::*;
+use crate::search::s_search_book;
 use axum::{extract::Query, response::IntoResponse, Json};
 use serde_derive::Deserialize;
 
@@ -103,7 +103,14 @@ pub struct DelBookParams {
     id: String,
 }
 pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
+    if convert == -1 {
+        return Json(None);
+    }
+    match sql_del_book_from_id(convert).await {
+        Ok(val) => Json(Some(val)),
+        Err(_) => return Json(None)
+    }
 }
 
 // `/del_tag?id={tag_id}`
@@ -112,5 +119,12 @@ pub struct DelTagParams {
     id: String,
 }
 pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
+    if convert == -1 {
+        return Json(None);
+    }
+    match sql_del_tag_from_id(convert).await {
+        Ok(val) => Json(Some(val)),
+        Err(_) => return Json(None)
+    }
 }

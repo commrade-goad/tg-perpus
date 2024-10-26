@@ -66,7 +66,9 @@ async fn main() {
         .route("/get_tag", get(get_tag))
         .route("/search", get(search_book))
         .route("/get_book_info", get(get_book_info))
-        .route("/get_book_from_tag", get(get_book_from_tag));
+        .route("/get_book_from_tag", get(get_book_from_tag))
+        .route("/del_tag", get(del_tag))
+        .route("/del_book", get(del_book));
 
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
