@@ -1,18 +1,6 @@
-* {  
-    margin: 0;
-    padding: 0;
-    box-sizing: inh;
-}
-
 .content {
     text-align: center;
     padding: 20px;
-}
-
-.icon {
-    font-size: 25px;
-    color: #EBEAEF;
-    padding-bottom: 20px;
 }
 
 .search {
@@ -26,15 +14,6 @@
     color:#EBEAEF;
     margin-right: 5px;
     outline:none;
-}
-
-.search::placeholder {
-    align-items: center;
-    justify-content: center;
-    align-content: center;
-    color: #EBEAEF;
-    opacity: 1;
-    font-size: 20px;
 }
 
 .grid {

@@ -7,6 +7,7 @@
     box-sizing: inherit;
     text-decoration: none;
     font-family: 'Poppins', sans-serif;
+    color:white;
 }
 
 body {
@@ -24,6 +25,19 @@ body {
     padding:15px;
     text-align: center;
     font-family: 'Poppins', sans-serif;
+}
+
+.search::placeholder {
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    color: #EBEAEF;
+    opacity: 1;
+    font-size: 20px;
+}
+
+.icon {
+    font-size: 25px;
 }
 
 .footer {
