@@ -37,14 +37,10 @@ pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoRespons
 // `/get_book_info?id={id}`
 #[derive(Deserialize)]
 pub struct BookInfoParams {
-    id: String,
+    id: i32,
 }
 pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoResponse {
-    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
-    if convert <= -1 {
-        return Json(None);
-    }
-    match sql_get_book_info(convert).await {
+    match sql_get_book_info(params.id).await {
         Ok(val) => Json(Some(val)),
         Err(_) => Json(None),
     }
@@ -55,16 +51,12 @@ pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoRes
 pub struct GetBookListFromTagParams {
     f: i32,
     r: i32,
-    id: String,
+    id: i32,
 }
 pub async fn get_book_from_tag(
     Query(params): Query<GetBookListFromTagParams>,
 ) -> impl IntoResponse {
-    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
-    if convert <= -1 {
-        return Json(None);
-    }
-    match sql_read_specified_tagged_book(convert, params.r, params.f).await {
+    match sql_read_specified_tagged_book(params.id, params.r, params.f).await {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
@@ -75,7 +67,7 @@ pub async fn get_book_from_tag(
     }
 }
 
-// `/add_book?t={title}&a={author}&tg={tag} {tag}&im={image blob}`
+// `/add_book?t={title}&a={author}&tg={tag} {tag}&im={path}`
 #[derive(Deserialize)]
 pub struct AddBookParams {
     t: String,
@@ -100,15 +92,11 @@ pub async fn add_new_tag(Query(params): Query<AddTagParams>) -> impl IntoRespons
 // `/del_book?id={book_id}`
 #[derive(Deserialize)]
 pub struct DelBookParams {
-    id: String,
+    id: i32,
 }
 pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse {
-    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
-    if convert == -1 {
-        return Json(None);
-    }
-    match sql_del_book_from_id(convert).await {
-        Ok(val) => Json(Some(val)),
+    match sql_del_book_from_id(params.id).await {
+        Ok(_) => Json(Some(true)),
         Err(_) => return Json(None),
     }
 }
@@ -116,15 +104,11 @@ pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse 
 // `/del_tag?id={tag_id}`
 #[derive(Deserialize)]
 pub struct DelTagParams {
-    id: String,
+    id: i32,
 }
 pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
-    let convert: i32 = params.id.trim().parse().unwrap_or(-1);
-    if convert == -1 {
-        return Json(None);
-    }
-    match sql_del_tag_from_id(convert).await {
-        Ok(val) => Json(Some(val)),
+    match sql_del_tag_from_id(params.id).await {
+        Ok(_) => Json(Some(true)),
         Err(_) => return Json(None),
     }
 }

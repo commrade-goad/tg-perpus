@@ -269,18 +269,13 @@ pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
             let mut book_data = book.unwrap();
 
             // Fetch tags for the current book_id
-            let mut tag_stmt = conn
-                .prepare(
-                    "
-                SELECT at.name, at.tags_id 
-                FROM book_tags bt 
-                JOIN all_tags at ON bt.tags_id = at.tags_id 
-                WHERE bt.book_id = .unwrap()
-                ",
-                )
-                .unwrap();
+            let mut tag_stmt = conn.prepare(&format!("
+                    SELECT at.name, at.tags_id 
+                    FROM book_tags bt 
+                    JOIN all_tags at ON bt.tags_id = at.tags_id 
+                    WHERE bt.book_id = {}", book_id)).unwrap();
             let tag_iter = tag_stmt
-                .query_map(params![book_data.id], |row| {
+                .query_map([], |row| {
                     let tag_name: String = row.get(0).unwrap();
                     let tag_id: i32 = row.get(1).unwrap();
                     let tmp_res: Tag = Tag {
