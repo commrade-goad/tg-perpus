@@ -28,7 +28,7 @@ pub struct SearchParams {
 }
 pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoResponse {
     let res = s_search_book(&params.q).await;
-    if res.0.len() <= 0 {
+    if res.len() <= 0 {
         return Json(None);
     }
     Json(Some(res))

@@ -5,10 +5,16 @@ use crate::book;
 use crate::sql;
 use std::collections::HashMap;
 
-#[derive(PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct SortedData {
+#[derive(PartialEq, PartialOrd, Serialize, Deserialize, Clone)]
+struct SortedData {
     index: i32,
     pub score: f64,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct SearchResult {
+    book: book::Book,
+    score: f64,
 }
 
 fn vectorize_book(documents: &Vec<book::Book>) -> Vec<HashMap<String, f64>> {
@@ -90,8 +96,9 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
     dot_product / (magnitude1 * magnitude2)
 }
 
-pub async fn s_search_book(keyword: &str) -> (Vec<book::Book>, Vec<SortedData>) {
+pub async fn s_search_book(keyword: &str) -> Vec<SearchResult> {
     let keyword_str: String = keyword.to_string();
+    let mut result: Vec<SearchResult> = Vec::new();
     tokio::task::spawn_blocking(move || {
         let book: Vec<book::Book> = sql::sql_read_book().unwrap();
         let stuff = vectorize_book(&book);
@@ -104,14 +111,17 @@ pub async fn s_search_book(keyword: &str) -> (Vec<book::Book>, Vec<SortedData>) 
                 score: cosine_similarity(&stuff2, &obj),
             })
         }
-        let mut book_res: Vec<book::Book> = Vec::new();
         kesamaan.sort_by(|a, b| a.partial_cmp(b).unwrap());
         for k in &kesamaan {
             if k.score > 0.0 {
-                book_res.push(book[k.index as usize].clone());
+                let new_obj: SearchResult = SearchResult {
+                    book : book[k.index as usize].clone(),
+                    score : k.score.clone()
+                };
+                result.push(new_obj);
             }
         }
-        return (book_res, kesamaan);
+        return result;
     })
     .await
     .unwrap()
