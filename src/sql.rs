@@ -107,10 +107,10 @@ pub async fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>, ()> 
         let _ = check_all_table(&conn);
         let mut stmt = conn
             .prepare(&format!(
-                "SELECT tags_id, name FROM all_tags limit {} offset {} ORDER BY name {}",
+                "SELECT tags_id, name FROM all_tags ORDER BY name {} limit {} offset {}",
+                get_sort_mode_val(),
                 range,
                 from,
-                get_sort_mode_val()
             ))
             .unwrap();
         let tags_iter = stmt
@@ -147,11 +147,11 @@ pub async fn sql_read_specified_tagged_book(
                 FROM book b
                 JOIN book_tags bt ON b.book_id = bt.book_id
                 JOIN all_tags at ON bt.tags_id = at.tags_id
-                WHERE at.tags_id = {} limit {} offset {} ORDER BY b.title {}",
+                WHERE at.tags_id = {} ORDER BY b.title {} limit {} offset {}",
                 tag_id,
+                get_sort_mode_val(),
                 lim,
                 off,
-                get_sort_mode_val()
             ))
             .unwrap();
         let books_iter = stmt
