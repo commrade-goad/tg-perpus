@@ -20,10 +20,10 @@ fn get_sort_mode_val() -> String {
     return "DESC".to_string();
 }
 
-pub fn set_sort_mode_to_asc(val: bool) -> Result<(), >{
+pub fn set_sort_mode_to_asc(val: bool) -> Result<()> {
     let mut locked_path = SORT_MODE_ASC.lock().unwrap();
     *locked_path = val;
-    return Ok(())
+    return Ok(());
 }
 
 lazy_static::lazy_static! {
@@ -107,8 +107,10 @@ pub async fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>, ()> 
         let _ = check_all_table(&conn);
         let mut stmt = conn
             .prepare(&format!(
-                "SELECT tags_id, name FROM all_tags limit {} offset {}",
-                range, from
+                "SELECT tags_id, name FROM all_tags limit {} offset {} ORDER BY name {}",
+                range,
+                from,
+                get_sort_mode_val()
             ))
             .unwrap();
         let tags_iter = stmt
@@ -142,11 +144,14 @@ pub async fn sql_read_specified_tagged_book(
         let mut stmt = conn
             .prepare(&format!(
                 "SELECT b.book_id, b.title, b.author, b.desc, b.year, b.cover
-            FROM book b
-            JOIN book_tags bt ON b.book_id = bt.book_id
-            JOIN all_tags at ON bt.tags_id = at.tags_id
-            WHERE at.tags_id = {} limit {} offset {}",
-                tag_id, lim, off
+                FROM book b
+                JOIN book_tags bt ON b.book_id = bt.book_id
+                JOIN all_tags at ON bt.tags_id = at.tags_id
+                WHERE at.tags_id = {} limit {} offset {} ORDER BY b.title {}",
+                tag_id,
+                lim,
+                off,
+                get_sort_mode_val()
             ))
             .unwrap();
         let books_iter = stmt
@@ -169,14 +174,15 @@ pub async fn sql_read_specified_tagged_book(
 
             // Fetch tags for the current book_id
             let mut tag_stmt = conn
-                .prepare(
+                .prepare(&format!(
                     "
                 SELECT at.name, at.tags_id 
                 FROM book_tags bt 
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
-                WHERE bt.book_id = ?
+                WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-                )
+                    get_sort_mode_val()
+                ))
                 .unwrap();
             let tag_iter = tag_stmt
                 .query_map(params![book_data.id], |row| {
@@ -209,7 +215,10 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
     let _ = check_all_table(&conn);
 
     // Get all books with their details
-    let mut stmt = conn.prepare("SELECT book_id, title, author, desc, year, cover FROM book")?;
+    let mut stmt = conn.prepare(&format!(
+        "SELECT book_id, title, author, desc, year, cover FROM book ORDER BY title {}",
+        get_sort_mode_val()
+    ))?;
     let books_iter = stmt.query_map([], |row| {
         Ok(book::Book {
             id: row.get(0)?,
@@ -227,14 +236,13 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
         let mut book_data = book?;
 
         // Fetch tags for the current book_id
-        let mut tag_stmt = conn.prepare(
-            "
+        let mut tag_stmt = conn.prepare(&format!("
             SELECT at.name, at.tags_id 
             FROM book_tags bt 
             JOIN all_tags at ON bt.tags_id = at.tags_id 
-            WHERE bt.book_id = ?
-        ",
-        )?;
+            WHERE bt.book_id = ? ORDER BY at.name {}",
+            get_sort_mode_val()
+        ))?;
         let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
             let tag_name: String = row.get(0)?;
             let tag_id: i32 = row.get(1)?;
@@ -252,7 +260,7 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
 
         res.push(book_data);
     }
-    Ok(res)
+    return Ok(res);
 }
 
 pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
@@ -293,8 +301,9 @@ pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
                     SELECT at.name, at.tags_id 
                     FROM book_tags bt 
                     JOIN all_tags at ON bt.tags_id = at.tags_id 
-                    WHERE bt.book_id = {}",
-                    book_id
+                    WHERE bt.book_id = {} ORDER BY at.name {}",
+                    book_id,
+                    get_sort_mode_val()
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -376,41 +385,48 @@ pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
 
         // Get all books with their details
         let mut stmt =
-            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {}", title_str)).unwrap();
-        let books_iter = stmt.query_map([], |row| {
-            Ok(book::Book {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                author: row.get(2)?,
-                desc: row.get(3)?,
-                tags: vec![], // Placeholder for tags, will fill this later
-                year: row.get(4)?,
-                cover: row.get(5)?,
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", title_str, get_sort_mode_val())).unwrap();
+        let books_iter = stmt
+            .query_map([], |row| {
+                Ok(book::Book {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    author: row.get(2)?,
+                    desc: row.get(3)?,
+                    tags: vec![], // Placeholder for tags, will fill this later
+                    year: row.get(4)?,
+                    cover: row.get(5)?,
+                })
             })
-        }).unwrap();
+            .unwrap();
 
         // Loop through each book and fetch tags
         for book in books_iter {
             let mut book_data = book.unwrap();
 
             // Fetch tags for the current book_id
-            let mut tag_stmt = conn.prepare(
-                "
+            let mut tag_stmt = conn
+                .prepare(&format!(
+                    "
                 SELECT at.name, at.tags_id 
                 FROM book_tags bt 
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
-                WHERE bt.book_id = ?
+                WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-            ).unwrap();
-            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
-                let tag_name: String = row.get(0)?;
-                let tag_id: i32 = row.get(1)?;
-                let tmp_res: Tag = Tag {
-                    id: tag_id,
-                    name: tag_name,
-                };
-                Ok(tmp_res) // Convert tags_id to String
-            }).unwrap();
+                    get_sort_mode_val()
+                ))
+                .unwrap();
+            let tag_iter = tag_stmt
+                .query_map(params![book_data.id], |row| {
+                    let tag_name: String = row.get(0)?;
+                    let tag_id: i32 = row.get(1)?;
+                    let tmp_res: Tag = Tag {
+                        id: tag_id,
+                        name: tag_name,
+                    };
+                    Ok(tmp_res) // Convert tags_id to String
+                })
+                .unwrap();
 
             // Collect tags into the book struct
             for tag in tag_iter {
@@ -433,41 +449,48 @@ pub async fn sql_search_author(author: &str) -> Result<Vec<book::Book>, ()> {
 
         // Get all books with their details
         let mut stmt =
-            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {}", author_str)).unwrap();
-        let books_iter = stmt.query_map([], |row| {
-            Ok(book::Book {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                author: row.get(2)?,
-                desc: row.get(3)?,
-                tags: vec![], // Placeholder for tags, will fill this later
-                year: row.get(4)?,
-                cover: row.get(5)?,
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", author_str, get_sort_mode_val())).unwrap();
+        let books_iter = stmt
+            .query_map([], |row| {
+                Ok(book::Book {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    author: row.get(2)?,
+                    desc: row.get(3)?,
+                    tags: vec![], // Placeholder for tags, will fill this later
+                    year: row.get(4)?,
+                    cover: row.get(5)?,
+                })
             })
-        }).unwrap();
+            .unwrap();
 
         // Loop through each book and fetch tags
         for book in books_iter {
             let mut book_data = book.unwrap();
 
             // Fetch tags for the current book_id
-            let mut tag_stmt = conn.prepare(
-                "
+            let mut tag_stmt = conn
+                .prepare(&format!(
+                    "
                 SELECT at.name, at.tags_id 
                 FROM book_tags bt 
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
-                WHERE bt.book_id = ?
+                WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-            ).unwrap();
-            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
-                let tag_name: String = row.get(0)?;
-                let tag_id: i32 = row.get(1)?;
-                let tmp_res: Tag = Tag {
-                    id: tag_id,
-                    name: tag_name,
-                };
-                Ok(tmp_res) // Convert tags_id to String
-            }).unwrap();
+                    get_sort_mode_val()
+                ))
+                .unwrap();
+            let tag_iter = tag_stmt
+                .query_map(params![book_data.id], |row| {
+                    let tag_name: String = row.get(0)?;
+                    let tag_id: i32 = row.get(1)?;
+                    let tmp_res: Tag = Tag {
+                        id: tag_id,
+                        name: tag_name,
+                    };
+                    Ok(tmp_res) // Convert tags_id to String
+                })
+                .unwrap();
 
             // Collect tags into the book struct
             for tag in tag_iter {

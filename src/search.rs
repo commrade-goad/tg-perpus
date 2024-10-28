@@ -115,8 +115,8 @@ pub async fn s_search_book(keyword: &str) -> Vec<SearchResult> {
         for k in &kesamaan {
             if k.score > 0.0 {
                 let new_obj: SearchResult = SearchResult {
-                    book : book[k.index as usize].clone(),
-                    score : k.score.clone()
+                    book: book[k.index as usize].clone(),
+                    score: k.score.clone(),
                 };
                 result.push(new_obj);
             }
