@@ -9,6 +9,23 @@ enum AllTable {
 }
 
 lazy_static::lazy_static! {
+    static ref SORT_MODE_ASC: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+}
+
+fn get_sort_mode_val() -> String {
+    let locked_buf = SORT_MODE_ASC.lock().unwrap();
+    if locked_buf.clone() == true {
+        return "ASC".to_string();
+    }
+    return "DESC".to_string();
+}
+
+pub fn set_sort_mode_to_asc(val: bool) {
+    let mut locked_path = SORT_MODE_ASC.lock().unwrap();
+    *locked_path = val
+}
+
+lazy_static::lazy_static! {
     static ref SQL_PATH: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
 }
 
@@ -269,11 +286,16 @@ pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
             let mut book_data = book.unwrap();
 
             // Fetch tags for the current book_id
-            let mut tag_stmt = conn.prepare(&format!("
+            let mut tag_stmt = conn
+                .prepare(&format!(
+                    "
                     SELECT at.name, at.tags_id 
                     FROM book_tags bt 
                     JOIN all_tags at ON bt.tags_id = at.tags_id 
-                    WHERE bt.book_id = {}", book_id)).unwrap();
+                    WHERE bt.book_id = {}",
+                    book_id
+                ))
+                .unwrap();
             let tag_iter = tag_stmt
                 .query_map([], |row| {
                     let tag_name: String = row.get(0).unwrap();
@@ -329,17 +351,131 @@ pub async fn sql_del_tag_from_id(tag_id: i32) -> Result<()> {
         conn.execute(
             "
                 DELETE FROM all_tags WHERE tags_id = ?
-        ",
+            ",
             [tag_id],
         )?;
         conn.execute(
             "
-            DELETE FROM book_tags where tags_id = ?
-        ",
+                DELETE FROM book_tags where tags_id = ?
+            ",
             [tag_id],
         )?;
         return Ok(());
     })
     .await
     .unwrap()
+}
+
+pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
+    let title_str: String = title.to_string();
+    tokio::task::spawn_blocking(move || {
+        let mut res: Vec<book::Book> = Vec::new();
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
+
+        // Get all books with their details
+        let mut stmt =
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {}", title_str)).unwrap();
+        let books_iter = stmt.query_map([], |row| {
+            Ok(book::Book {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                author: row.get(2)?,
+                desc: row.get(3)?,
+                tags: vec![], // Placeholder for tags, will fill this later
+                year: row.get(4)?,
+                cover: row.get(5)?,
+            })
+        }).unwrap();
+
+        // Loop through each book and fetch tags
+        for book in books_iter {
+            let mut book_data = book.unwrap();
+
+            // Fetch tags for the current book_id
+            let mut tag_stmt = conn.prepare(
+                "
+                SELECT at.name, at.tags_id 
+                FROM book_tags bt 
+                JOIN all_tags at ON bt.tags_id = at.tags_id 
+                WHERE bt.book_id = ?
+                ",
+            ).unwrap();
+            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
+                let tag_name: String = row.get(0)?;
+                let tag_id: i32 = row.get(1)?;
+                let tmp_res: Tag = Tag {
+                    id: tag_id,
+                    name: tag_name,
+                };
+                Ok(tmp_res) // Convert tags_id to String
+            }).unwrap();
+
+            // Collect tags into the book struct
+            for tag in tag_iter {
+                book_data.tags.push(tag.unwrap());
+            }
+
+            res.push(book_data);
+        }
+        return Ok::<Vec<book::Book>, ()>(res);
+    });
+    return Err(());
+}
+
+pub async fn sql_search_author(author: &str) -> Result<Vec<book::Book>, ()> {
+    let author_str: String = author.to_string();
+    tokio::task::spawn_blocking(move || {
+        let mut res: Vec<book::Book> = Vec::new();
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
+
+        // Get all books with their details
+        let mut stmt =
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {}", author_str)).unwrap();
+        let books_iter = stmt.query_map([], |row| {
+            Ok(book::Book {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                author: row.get(2)?,
+                desc: row.get(3)?,
+                tags: vec![], // Placeholder for tags, will fill this later
+                year: row.get(4)?,
+                cover: row.get(5)?,
+            })
+        }).unwrap();
+
+        // Loop through each book and fetch tags
+        for book in books_iter {
+            let mut book_data = book.unwrap();
+
+            // Fetch tags for the current book_id
+            let mut tag_stmt = conn.prepare(
+                "
+                SELECT at.name, at.tags_id 
+                FROM book_tags bt 
+                JOIN all_tags at ON bt.tags_id = at.tags_id 
+                WHERE bt.book_id = ?
+                ",
+            ).unwrap();
+            let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
+                let tag_name: String = row.get(0)?;
+                let tag_id: i32 = row.get(1)?;
+                let tmp_res: Tag = Tag {
+                    id: tag_id,
+                    name: tag_name,
+                };
+                Ok(tmp_res) // Convert tags_id to String
+            }).unwrap();
+
+            // Collect tags into the book struct
+            for tag in tag_iter {
+                book_data.tags.push(tag.unwrap());
+            }
+
+            res.push(book_data);
+        }
+        return Ok::<Vec<book::Book>, ()>(res);
+    });
+    return Err(());
 }
