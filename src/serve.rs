@@ -112,3 +112,15 @@ pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
         Err(_) => return Json(None),
     }
 }
+
+// `/set_order?asc={true}`
+#[derive(Deserialize)]
+pub struct SetOrder {
+    asc: bool,
+}
+pub async fn set_order_asc(Query(params): Query<SetOrder>) -> impl IntoResponse {
+    match set_sort_mode_to_asc(params.asc) {
+        Ok(()) => Json(Ok("SUCCESS")),
+        Err(_) => Json(Err("FAILED"))
+    }
+}

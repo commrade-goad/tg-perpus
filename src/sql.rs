@@ -20,9 +20,10 @@ fn get_sort_mode_val() -> String {
     return "DESC".to_string();
 }
 
-pub fn set_sort_mode_to_asc(val: bool) {
+pub fn set_sort_mode_to_asc(val: bool) -> Result<(), >{
     let mut locked_path = SORT_MODE_ASC.lock().unwrap();
-    *locked_path = val
+    *locked_path = val;
+    return Ok(())
 }
 
 lazy_static::lazy_static! {
