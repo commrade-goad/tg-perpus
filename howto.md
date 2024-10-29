@@ -46,5 +46,5 @@ curl http://localhost:8081/del_book\?id\=3
 ```
 
 ## NOTE
-- add : `sort="asc" to sort ascending when calling`
-- add : `sort="desc" to sort descending when calling`
+- add : `sort="asc"` to sort ascending when calling
+- add : `sort="desc"` to sort descending when calling
