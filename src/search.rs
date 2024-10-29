@@ -96,11 +96,11 @@ fn cosine_similarity(vec1: &HashMap<String, f64>, vec2: &HashMap<String, f64>) -
     dot_product / (magnitude1 * magnitude2)
 }
 
-pub async fn s_search_book(keyword: &str) -> Vec<SearchResult> {
+pub async fn s_search_book(keyword: &str, sort_mode: String) -> Vec<SearchResult> {
     let keyword_str: String = keyword.to_string();
     let mut result: Vec<SearchResult> = Vec::new();
     tokio::task::spawn_blocking(move || {
-        let book: Vec<book::Book> = sql::sql_read_book().unwrap();
+        let book: Vec<book::Book> = sql::sql_read_book(sort_mode).unwrap();
         let stuff = vectorize_book(&book);
         let stuff2 = vectorize_word(&keyword_str, stuff.clone());
         let mut kesamaan: Vec<SortedData> = Vec::new();

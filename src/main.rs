@@ -67,7 +67,7 @@ async fn main() {
         .route("/search", get(search_book))
         .route("/get_book_info", get(get_book_info))
         .route("/get_book_from_tag", get(get_book_from_tag))
-        .route("/set_order", get(set_order_asc))
+        // .route("/set_order", get(set_order_asc))
         .route("/add_book", get(add_new_book))
         .route("/add_tag", get(add_new_tag))
         .route("/del_tag", get(del_tag))

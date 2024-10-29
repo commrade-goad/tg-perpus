@@ -8,9 +8,17 @@ use serde_derive::Deserialize;
 pub struct GetTagParams {
     f: i32,
     r: i32,
+    sort: Option<String>,
 }
 pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
-    match sql_read_tags(params.f, params.r).await {
+    let sort_parse: String = params.sort.as_deref().unwrap_or("ASC").to_string();
+    let sorting_mode: String;
+    if !is_valid_sort(&sort_parse){
+        sorting_mode = "ASC".to_string();
+    } else {
+        sorting_mode = sort_parse;
+    }
+    match sql_read_tags(params.f, params.r, sorting_mode).await {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
@@ -25,9 +33,17 @@ pub async fn get_tag(Query(params): Query<GetTagParams>) -> impl IntoResponse {
 #[derive(Deserialize)]
 pub struct SearchParams {
     q: String,
+    sort: Option<String>,
 }
 pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoResponse {
-    let res = s_search_book(&params.q).await;
+    let sort_parse: String = params.sort.as_deref().unwrap_or("ASC").to_string();
+    let sorting_mode: String;
+    if !is_valid_sort(&sort_parse){
+        sorting_mode = "ASC".to_string();
+    } else {
+        sorting_mode = sort_parse;
+    }
+    let res = s_search_book(&params.q, sorting_mode).await;
     if res.len() <= 0 {
         return Json(None);
     }
@@ -38,9 +54,17 @@ pub async fn search_book(Query(params): Query<SearchParams>) -> impl IntoRespons
 #[derive(Deserialize)]
 pub struct BookInfoParams {
     id: i32,
+    sort: Option<String>,
 }
 pub async fn get_book_info(Query(params): Query<BookInfoParams>) -> impl IntoResponse {
-    match sql_get_book_info(params.id).await {
+    let sort_parse: String = params.sort.as_deref().unwrap_or("ASC").to_string();
+    let sorting_mode: String;
+    if !is_valid_sort(&sort_parse){
+        sorting_mode = "ASC".to_string();
+    } else {
+        sorting_mode = sort_parse;
+    }
+    match sql_get_book_info(params.id, sorting_mode).await {
         Ok(val) => Json(Some(val)),
         Err(_) => Json(None),
     }
@@ -52,11 +76,19 @@ pub struct GetBookListFromTagParams {
     f: i32,
     r: i32,
     id: i32,
+    sort: Option<String>,
 }
 pub async fn get_book_from_tag(
     Query(params): Query<GetBookListFromTagParams>,
 ) -> impl IntoResponse {
-    match sql_read_specified_tagged_book(params.id, params.r, params.f).await {
+    let sort_parse: String = params.sort.as_deref().unwrap_or("ASC").to_string();
+    let sorting_mode: String;
+    if !is_valid_sort(&sort_parse){
+        sorting_mode = "ASC".to_string();
+    } else {
+        sorting_mode = sort_parse;
+    }
+    match sql_read_specified_tagged_book(params.id, params.r, params.f, sorting_mode).await {
         Ok(val) => {
             if val.len() <= 0 {
                 return Json(None);
@@ -96,7 +128,7 @@ pub struct DelBookParams {
 }
 pub async fn del_book(Query(params): Query<DelBookParams>) -> impl IntoResponse {
     match sql_del_book_from_id(params.id).await {
-        Ok(_) => Json(Some(true)),
+        Ok(_) => Json(Some("SUCCESS")),
         Err(_) => return Json(None),
     }
 }
@@ -108,19 +140,7 @@ pub struct DelTagParams {
 }
 pub async fn del_tag(Query(params): Query<DelTagParams>) -> impl IntoResponse {
     match sql_del_tag_from_id(params.id).await {
-        Ok(_) => Json(Some(true)),
+        Ok(_) => Json(Some("SUCCESS")),
         Err(_) => return Json(None),
-    }
-}
-
-// `/set_order?asc={true}`
-#[derive(Deserialize)]
-pub struct SetOrder {
-    asc: bool,
-}
-pub async fn set_order_asc(Query(params): Query<SetOrder>) -> impl IntoResponse {
-    match set_sort_mode_to_asc(params.asc) {
-        Ok(()) => Json(Ok("SUCCESS")),
-        Err(_) => Json(Err("FAILED"))
     }
 }

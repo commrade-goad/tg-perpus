@@ -8,22 +8,13 @@ enum AllTable {
     BookTags,
 }
 
-lazy_static::lazy_static! {
-    static ref SORT_MODE_ASC: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
-}
-
-fn get_sort_mode_val() -> String {
-    let locked_buf = SORT_MODE_ASC.lock().unwrap();
-    if locked_buf.clone() == true {
-        return "ASC".to_string();
-    }
-    return "DESC".to_string();
-}
-
-pub fn set_sort_mode_to_asc(val: bool) -> Result<()> {
-    let mut locked_path = SORT_MODE_ASC.lock().unwrap();
-    *locked_path = val;
-    return Ok(());
+pub fn is_valid_sort(sort: &str) -> bool{
+    let new_str: &str = &sort.to_uppercase();
+    match &new_str.to_uppercase()[..] {
+        "ASC" => return true,
+        "DESC" => return true, 
+        _ => return false
+    } 
 }
 
 lazy_static::lazy_static! {
@@ -100,7 +91,7 @@ fn check_all_table(conn: &Connection) -> Result<()> {
     return Ok(());
 }
 
-pub async fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>, ()> {
+pub async fn sql_read_tags(from: i32, range: i32, sort_mode: String) -> Result<Vec<book::Tag>, ()> {
     tokio::task::spawn_blocking(move || {
         let mut res: Vec<book::Tag> = Vec::new();
         let conn = Connection::open(get_sql_path_val()).unwrap();
@@ -108,7 +99,7 @@ pub async fn sql_read_tags(from: i32, range: i32) -> Result<Vec<book::Tag>, ()> 
         let mut stmt = conn
             .prepare(&format!(
                 "SELECT tags_id, name FROM all_tags ORDER BY name {} limit {} offset {}",
-                get_sort_mode_val(),
+                sort_mode,
                 range,
                 from,
             ))
@@ -134,6 +125,7 @@ pub async fn sql_read_specified_tagged_book(
     tag_id: i32,
     lim: i32,
     off: i32,
+    sort_mode: String
 ) -> Result<Vec<book::Book>, ()> {
     tokio::task::spawn_blocking(move || {
         let mut res: Vec<book::Book> = Vec::new();
@@ -149,7 +141,7 @@ pub async fn sql_read_specified_tagged_book(
                 JOIN all_tags at ON bt.tags_id = at.tags_id
                 WHERE at.tags_id = {} ORDER BY b.title {} limit {} offset {}",
                 tag_id,
-                get_sort_mode_val(),
+                sort_mode,
                 lim,
                 off,
             ))
@@ -181,7 +173,7 @@ pub async fn sql_read_specified_tagged_book(
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
                 WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-                    get_sort_mode_val()
+                   sort_mode 
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -209,7 +201,7 @@ pub async fn sql_read_specified_tagged_book(
     .unwrap()
 }
 
-pub fn sql_read_book() -> Result<Vec<book::Book>> {
+pub fn sql_read_book(sort_mode: String) -> Result<Vec<book::Book>> {
     let mut res: Vec<book::Book> = Vec::new();
     let conn = Connection::open(get_sql_path_val())?;
     let _ = check_all_table(&conn);
@@ -217,7 +209,7 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
     // Get all books with their details
     let mut stmt = conn.prepare(&format!(
         "SELECT book_id, title, author, desc, year, cover FROM book ORDER BY title {}",
-        get_sort_mode_val()
+        sort_mode
     ))?;
     let books_iter = stmt.query_map([], |row| {
         Ok(book::Book {
@@ -241,7 +233,7 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
             FROM book_tags bt 
             JOIN all_tags at ON bt.tags_id = at.tags_id 
             WHERE bt.book_id = ? ORDER BY at.name {}",
-            get_sort_mode_val()
+           sort_mode 
         ))?;
         let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
             let tag_name: String = row.get(0)?;
@@ -263,7 +255,7 @@ pub fn sql_read_book() -> Result<Vec<book::Book>> {
     return Ok(res);
 }
 
-pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
+pub async fn sql_get_book_info(book_id: i32, sort_mode: String) -> Result<book::Book, ()> {
     tokio::task::spawn_blocking(move || {
         let res: book::Book;
         let conn = Connection::open(get_sql_path_val()).unwrap();
@@ -303,7 +295,7 @@ pub async fn sql_get_book_info(book_id: i32) -> Result<book::Book, ()> {
                     JOIN all_tags at ON bt.tags_id = at.tags_id 
                     WHERE bt.book_id = {} ORDER BY at.name {}",
                     book_id,
-                    get_sort_mode_val()
+                    sort_mode 
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -376,7 +368,7 @@ pub async fn sql_del_tag_from_id(tag_id: i32) -> Result<()> {
     .unwrap()
 }
 
-pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
+pub async fn sql_search_title(title: &str, sort_mode: String) -> Result<Vec<book::Book>, ()> {
     let title_str: String = title.to_string();
     tokio::task::spawn_blocking(move || {
         let mut res: Vec<book::Book> = Vec::new();
@@ -385,7 +377,7 @@ pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
 
         // Get all books with their details
         let mut stmt =
-            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", title_str, get_sort_mode_val())).unwrap();
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", title_str, sort_mode)).unwrap();
         let books_iter = stmt
             .query_map([], |row| {
                 Ok(book::Book {
@@ -413,7 +405,7 @@ pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
                 WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-                    get_sort_mode_val()
+                    sort_mode
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -440,7 +432,7 @@ pub async fn sql_search_title(title: &str) -> Result<Vec<book::Book>, ()> {
     return Err(());
 }
 
-pub async fn sql_search_author(author: &str) -> Result<Vec<book::Book>, ()> {
+pub async fn sql_search_author(author: &str, sort_mode: String) -> Result<Vec<book::Book>, ()> {
     let author_str: String = author.to_string();
     tokio::task::spawn_blocking(move || {
         let mut res: Vec<book::Book> = Vec::new();
@@ -449,7 +441,7 @@ pub async fn sql_search_author(author: &str) -> Result<Vec<book::Book>, ()> {
 
         // Get all books with their details
         let mut stmt =
-            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", author_str, get_sort_mode_val())).unwrap();
+            conn.prepare(&format!("SELECT book_id, title, author, desc, year, cover FROM book WHERE title = {} ORDER BY title {}", author_str, sort_mode)).unwrap();
         let books_iter = stmt
             .query_map([], |row| {
                 Ok(book::Book {
@@ -477,7 +469,7 @@ pub async fn sql_search_author(author: &str) -> Result<Vec<book::Book>, ()> {
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
                 WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-                    get_sort_mode_val()
+                    sort_mode
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
