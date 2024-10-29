@@ -118,7 +118,10 @@ pub struct AddTagParams {
     im: String,
 }
 pub async fn add_new_tag(Query(params): Query<AddTagParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    match sql_add_new_tag(&params.n, &params.im).await {
+        Ok(_) => Json(Some("SUCCESS")),
+        Err(_) => return Json(None),
+    }
 }
 
 // `/del_book?id={book_id}`

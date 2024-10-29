@@ -30,19 +30,20 @@ BLM JADI
 
 - `"/add_tag"`
 ```
-BLM JADI
+curl http://localhost:8081/add_tag\?n\="python"\&im\=""
+"SUCCESS"
 ```
 
 - `"/del_tag"`
 ```
 curl http://localhost:8081/del_tag\?id\=3
-"Ok": "SUCCESS"
+"SUCCESS"
 ```
 
 - `"/del_book"`
 ```
 curl http://localhost:8081/del_book\?id\=3
-"Ok": "SUCCESS"
+"SUCCESS"
 ```
 
 ## NOTE

@@ -8,13 +8,13 @@ enum AllTable {
     BookTags,
 }
 
-pub fn is_valid_sort(sort: &str) -> bool{
+pub fn is_valid_sort(sort: &str) -> bool {
     let new_str: &str = &sort.to_uppercase();
     match &new_str.to_uppercase()[..] {
         "ASC" => return true,
-        "DESC" => return true, 
-        _ => return false
-    } 
+        "DESC" => return true,
+        _ => return false,
+    }
 }
 
 lazy_static::lazy_static! {
@@ -99,9 +99,7 @@ pub async fn sql_read_tags(from: i32, range: i32, sort_mode: String) -> Result<V
         let mut stmt = conn
             .prepare(&format!(
                 "SELECT tags_id, name FROM all_tags ORDER BY name {} limit {} offset {}",
-                sort_mode,
-                range,
-                from,
+                sort_mode, range, from,
             ))
             .unwrap();
         let tags_iter = stmt
@@ -125,7 +123,7 @@ pub async fn sql_read_specified_tagged_book(
     tag_id: i32,
     lim: i32,
     off: i32,
-    sort_mode: String
+    sort_mode: String,
 ) -> Result<Vec<book::Book>, ()> {
     tokio::task::spawn_blocking(move || {
         let mut res: Vec<book::Book> = Vec::new();
@@ -140,10 +138,7 @@ pub async fn sql_read_specified_tagged_book(
                 JOIN book_tags bt ON b.book_id = bt.book_id
                 JOIN all_tags at ON bt.tags_id = at.tags_id
                 WHERE at.tags_id = {} ORDER BY b.title {} limit {} offset {}",
-                tag_id,
-                sort_mode,
-                lim,
-                off,
+                tag_id, sort_mode, lim, off,
             ))
             .unwrap();
         let books_iter = stmt
@@ -173,7 +168,7 @@ pub async fn sql_read_specified_tagged_book(
                 JOIN all_tags at ON bt.tags_id = at.tags_id 
                 WHERE bt.book_id = ? ORDER BY at.name {}
                 ",
-                   sort_mode 
+                    sort_mode
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -228,12 +223,13 @@ pub fn sql_read_book(sort_mode: String) -> Result<Vec<book::Book>> {
         let mut book_data = book?;
 
         // Fetch tags for the current book_id
-        let mut tag_stmt = conn.prepare(&format!("
+        let mut tag_stmt = conn.prepare(&format!(
+            "
             SELECT at.name, at.tags_id 
             FROM book_tags bt 
             JOIN all_tags at ON bt.tags_id = at.tags_id 
             WHERE bt.book_id = ? ORDER BY at.name {}",
-           sort_mode 
+            sort_mode
         ))?;
         let tag_iter = tag_stmt.query_map(params![book_data.id], |row| {
             let tag_name: String = row.get(0)?;
@@ -294,8 +290,7 @@ pub async fn sql_get_book_info(book_id: i32, sort_mode: String) -> Result<book::
                     FROM book_tags bt 
                     JOIN all_tags at ON bt.tags_id = at.tags_id 
                     WHERE bt.book_id = {} ORDER BY at.name {}",
-                    book_id,
-                    sort_mode 
+                    book_id, sort_mode
                 ))
                 .unwrap();
             let tag_iter = tag_stmt
@@ -494,4 +489,28 @@ pub async fn sql_search_author(author: &str, sort_mode: String) -> Result<Vec<bo
         return Ok::<Vec<book::Book>, ()>(res);
     });
     return Err(());
+}
+
+pub async fn sql_add_new_tag(tag_name: &str, img: &str) -> Result<usize, ()> {
+    let tag_name = tag_name.replace("'", "''");
+    let img = img.to_string();
+
+    tokio::task::spawn_blocking(move || {
+        let conn = Connection::open(get_sql_path_val()).map_err(|_| ())?;
+        check_all_table(&conn).map_err(|_| ())?;
+
+        // Get the count of existing tags
+        let count: i32 = conn
+            .query_row("SELECT COUNT(*) FROM all_tags", [], |row| row.get(0))
+            .map_err(|_| ())?;
+
+        // Insert the new tag using parameterized query
+        conn.execute(
+            "INSERT INTO all_tags (tags_id, name, img) VALUES (?, ?, ?)",
+            params![count + 1, tag_name, img],
+        )
+        .map_err(|_| ())
+    })
+    .await
+    .map_err(|_| ())?
 }
