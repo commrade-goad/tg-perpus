@@ -13,9 +13,8 @@ payload = {
 }
 
 # Send the POST request
-headers = {'Content-Type': 'application/json'}
-# response = requests.get(url, json=payload, headers=headers)
-response = requests.get(url, params=payload)
+response = requests.post(url, params=payload)
+# response = requests.get(url, params=payload)
 
 # Check the response
 print(response.status_code)

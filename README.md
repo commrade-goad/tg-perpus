@@ -7,3 +7,6 @@
 - Fernando Perry
 - Vincentius Johanes Lwie Jaya
 - Yohanes Bramanta Adi Putra
+
+## API HOW-TO
+open here for [guide](./howto.md)

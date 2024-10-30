@@ -2,7 +2,7 @@ mod book;
 mod search;
 mod serve;
 mod sql;
-use axum::{routing::get, Router};
+use axum::{routing::get, routing::post, Router};
 use serve::*;
 use sql::set_sql_path_val;
 use std::env;
@@ -67,11 +67,10 @@ async fn main() {
         .route("/search", get(search_book))
         .route("/get_book_info", get(get_book_info))
         .route("/get_book_from_tag", get(get_book_from_tag))
-        // .route("/set_order", get(set_order_asc))
-        .route("/add_book", get(add_new_book))
-        .route("/add_tag", get(add_new_tag))
-        .route("/del_tag", get(del_tag))
-        .route("/del_book", get(del_book));
+        .route("/add_book", post(add_new_book))
+        .route("/add_tag", post(add_new_tag))
+        .route("/del_tag", post(del_tag))
+        .route("/del_book", post(del_book));
 
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
