@@ -514,3 +514,50 @@ pub async fn sql_add_new_tag(tag_name: &str, img: &str) -> Result<usize, ()> {
     .await
     .map_err(|_| ())?
 }
+
+pub async fn sql_add_new_book(book_name: &str, author: &str, tags_id: &str, year: &str, desc: &str,img: &str) -> Result<usize, ()> {
+    let title = book_name.replace("'", "''");
+    let auth = author.to_string();
+    let y = year.to_string();
+    let d = desc.replace("'", "''");
+    let img = img.to_string();
+    let tags_arr:Vec<String> = tags_id.split_whitespace().map(|s| s.to_string()).collect();
+
+
+    tokio::task::spawn_blocking(move || {
+        let conn = Connection::open(get_sql_path_val()).unwrap();
+        let _ = check_all_table(&conn);
+
+        // Get the count of existing tags
+        let count: i32 = conn
+            .query_row("SELECT COUNT(*) FROM book", [], |row| row.get(0))
+            .map_err(|_| ())?;
+
+        // Insert the new tag using parameterized query
+        let _ = conn.execute(
+            "INSERT INTO book (book_id, title, author, desc, year, cover) VALUES (?, ?, ?, ?, ?, ?)",
+            params![count + 1, title, auth, d, y, img],
+        )
+        .map_err(|_| ());
+
+        let mut idx = 0;
+        for tag in tags_arr {
+            let tag_int: i32 = tag.trim().parse().map_err(|_| ())?;
+            let btag: String = format!("{}-{}", count + 1, idx);
+
+            let result = conn.execute(
+                "INSERT INTO book_tags (btag_id, book_id, tags_id) VALUES (?, ?, ?)",
+                params![btag, count + 1, tag_int],
+            );
+
+            if let Err(e) = result {
+                println!("Error inserting into book_tags: {:?}", e);
+                return Err(()); // Adjust as needed
+            }
+            idx += 1;
+        }
+        Ok(1)
+    })
+    .await
+    .map_err(|_| ())?
+}

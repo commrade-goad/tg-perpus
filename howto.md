@@ -25,7 +25,8 @@ curl http://localhost:8081/get_book_from_tag\?f\=0\&r\=10\&id\="1"
 
 - `"/add_book"`
 ```
-BLM JADI
+contoh : pada (pytohon script)[./test.py]
+"SUCCESS"
 ```
 
 - `"/add_tag"`

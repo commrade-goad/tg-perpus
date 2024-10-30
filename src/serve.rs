@@ -102,23 +102,28 @@ pub async fn get_book_from_tag(
 // `/add_book?t={title}&a={author}&tg={tag} {tag}&im={path}`
 #[derive(Deserialize)]
 pub struct AddBookParams {
-    t: String,
-    a: String,
-    tg: String,
-    im: String,
+    title: String,
+    author: String,
+    tagid: String,
+    imgp: String,
+    year: String,
+    desc: String
 }
 pub async fn add_new_book(Query(params): Query<AddBookParams>) -> impl IntoResponse {
-    Json("NOT IMPLEMENTED YET")
+    match sql_add_new_book(&params.title, &params.author, &params.tagid, &params.year, &params.desc, &params.imgp).await {
+        Ok(_) => Json(Some("SUCCESS")),
+        Err(_) => return Json(None),
+    }
 }
 
 // `/add_tag?n={name}&im={image blob}`
 #[derive(Deserialize)]
 pub struct AddTagParams {
-    n: String,
-    im: String,
+    name: String,
+    imgp: String,
 }
 pub async fn add_new_tag(Query(params): Query<AddTagParams>) -> impl IntoResponse {
-    match sql_add_new_tag(&params.n, &params.im).await {
+    match sql_add_new_tag(&params.name, &params.imgp).await {
         Ok(_) => Json(Some("SUCCESS")),
         Err(_) => return Json(None),
     }
