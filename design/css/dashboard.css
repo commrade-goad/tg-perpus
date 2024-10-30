@@ -1,5 +1,9 @@
 @import url('https://fonts.cdnfonts.com/css/poppins');
 
+.content h2 {
+    color:white;
+}
+
 .content {
     height:90vh;
     display: flex;
@@ -8,23 +12,45 @@
     flex-direction: column;
 }
 
+.icon {
+    font-size: 25px;
+    color: #EBEAEF;
+    margin-top:5px;
+}   
+
 .search {
     margin-top:10px;
     font-size:20px;
     padding-left:20px;
     width:800px;
-    height:40px;
+    height:100%;
     background-color: transparent;
     border: 3px solid white;
     border-radius: 12px;
+    color:#EBEAEF;
     margin-right: 5px;
     outline:none;
+}
+
+.search::placeholder {
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    color: #EBEAEF;
+    opacity: 1;
+    font-size: 20px;
+}
+
+a {
+    text-decoration: none;
+    color: #EBEAEF;
 }
 
 .tag {
     display: flex;
     gap:30px;
     margin-top: 15px;
+    color:#EBEAEF;
     font-size: 20px;
     padding:10px
 }
@@ -35,4 +61,5 @@
     border-radius: 10px;
     border-width: 3px;
     text-decoration: none;
+    color:white  
 }

@@ -1,0 +1,50 @@
+@import url('https://fonts.cdnfonts.com/css/poppins');
+@import url('https://fonts.cdnfonts.com/css/montserrat');
+
+* {  
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+
+body {
+    -webkit-box-sizing: border-box;
+    background-color: #3B73CA;
+}
+
+.header {
+    text-align:center;
+    background-color: #024CAA;
+    color:white;    
+    padding:20px;
+    width: 100%;
+}
+
+.text {
+    width: auto;
+    font-family: 'Poppins', sans-serif;
+}
+
+.text a {
+    text-decoration: none;
+    color: white;
+}
+
+.text:hover {
+    text-shadow: 2px 3px 11px #000000;
+}
+
+.footer {
+    padding: 13px;
+    background-color: #024CAA;
+    text-align: center;
+    color:white;
+    width: 100%;
+    margin-top: 22vh !important;
+}
+
+.footer p {
+    font-family: 'Poppins', sans-serif;
+    font-size:18px;
+    font-weight: 400;
+}
