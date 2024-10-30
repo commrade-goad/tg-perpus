@@ -1,20 +1,23 @@
 mod book;
-mod serve;
 mod search;
+mod serve;
 mod sql;
-use axum::{routing::get, Router};
+use axum::{routing::get, routing::post, Router};
 use serve::*;
-use sql::{set_sql_path_val, read_book};
+use sql::set_sql_path_val;
 use std::env;
 
 struct ProgArgs {
     port: String,
-    sql_path: String
+    sql_path: String,
 }
 
 impl ProgArgs {
     fn default_value() -> ProgArgs {
-        return ProgArgs { port: "8081".to_string(), sql_path: "./db.sqlite".to_string() };
+        return ProgArgs {
+            port: "8081".to_string(),
+            sql_path: "./db.sqlite".to_string(),
+        };
     }
 }
 
@@ -30,14 +33,14 @@ fn parse_args(args: Vec<String>) -> Option<ProgArgs> {
         let current_arg = &args[idx];
         match &current_arg[..] {
             "-p" | "--port" => {
-                if idx + 1 <= args.len() -1 {
-                    res.port = args[idx+1].clone();
+                if idx + 1 <= args.len() - 1 {
+                    res.port = args[idx + 1].clone();
                 }
                 idx += 1;
             }
             "-d" | "--databse" => {
-                if idx + 1 <= args.len() -1 {
-                    res.sql_path = args[idx+1].clone();
+                if idx + 1 <= args.len() - 1 {
+                    res.sql_path = args[idx + 1].clone();
                 }
                 idx += 1;
             }
@@ -54,19 +57,24 @@ async fn main() {
     let parsed: ProgArgs = parse_args(args).unwrap_or(ProgArgs::default_value());
     let ip: &str = "0.0.0.0";
     let port: &str = &parsed.port;
+
     set_sql_path_val(&parsed.sql_path);
 
     let combine: &str = &format!("{}:{}", ip, port);
 
     let app = Router::new()
         .route("/get_tag", get(get_tag))
-        .route("/search", get(search_book));
+        .route("/search", get(search_book))
+        .route("/get_book_info", get(get_book_info))
+        .route("/get_book_from_tag", get(get_book_from_tag))
+        .route("/add_book", post(add_new_book))
+        .route("/add_tag", post(add_new_tag))
+        .route("/del_tag", post(del_tag))
+        .route("/del_book", post(del_book));
 
     let addr = tokio::net::TcpListener::bind(combine).await.unwrap();
 
     println!("Server running at http://{}:{}", ip, port);
-
-    let _ = read_book();
 
     axum::serve(addr, app).await.unwrap();
 }
